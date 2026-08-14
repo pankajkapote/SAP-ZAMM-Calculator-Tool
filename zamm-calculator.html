@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP ZAMM Calculator - Zero Administration Memory Management</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #004494;
+            --accent: #ff6600;
+            --accent-light: #ffb380;
+            --success: #2dcc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --bg-light: #f5f7fa;
+            --bg-white: #ffffff;
+            --text-dark: #1a1a1a;
+            --text-light: #666666;
+            --border-light: #ddd;
+            --sap-blue: #003366;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--sap-blue) 0%, var(--primary) 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 51, 102, 0.15);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-white);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .card h2 {
+            color: var(--sap-blue);
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary);
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-size: 0.95em;
+        }
+
+        label .required {
+            color: var(--danger);
+        }
+
+        .input-help {
+            font-size: 0.85em;
+            color: var(--text-light);
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .checkbox-label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #27ae60;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-left-color: #0c5460;
+            color: #0c5460;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-left-color: #155724;
+            color: #155724;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-left-color: #856404;
+            color: #856404;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            border-left-color: #721c24;
+            color: #721c24;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .result-card {
+            background: var(--bg-light);
+            border: 2px solid var(--border-light);
+            padding: 18px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .result-card:hover {
+            border-color: var(--primary);
+            background: white;
+        }
+
+        .result-label {
+            font-size: 0.85em;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+        }
+
+        .result-unit {
+            font-size: 0.8em;
+            color: var(--text-light);
+            margin-left: 5px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .status-enabled {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disabled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .comparison-table thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        .comparison-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .comparison-table tbody tr:hover {
+            background: var(--bg-light);
+        }
+
+        .diff-lower {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .diff-higher {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .diff-ok {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid var(--border-light);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .oss-note {
+            background: #e8f4f8;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .oss-note h4 {
+            color: var(--sap-blue);
+            margin-bottom: 8px;
+        }
+
+        .oss-note a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .oss-note a:hover {
+            text-decoration: underline;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--border-light), transparent);
+            margin: 30px 0;
+        }
+
+        .action-notes {
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .print-section {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        @media print {
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .button-group {
+                display: none;
+            }
+
+            .card {
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--border-light);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            background: var(--bg-light);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary);
+            background: white;
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--accent);
+            background: #fff8f0;
+        }
+
+        .upload-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .filename {
+            font-size: 0.9em;
+            color: var(--text-light);
+            margin-top: 10px;
+        }
+
+        .impact-box {
+            background: #fff3cd;
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .impact-box h5 {
+            color: #856404;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .impact-box ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+
+        .impact-box li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔧 SAP ZAMM Calculator</h1>
+            <p>Zero Administration Memory Management Configuration Tool</p>
+            <div class="header-badge">SAP Kernel 7.40+</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Input Section -->
+            <div class="card">
+                <h2>Configuration Input</h2>
+                
+                <div class="form-group">
+                    <label>Operating System <span class="required">*</span></label>
+                    <select id="osType" required>
+                        <option value="">-- Select Operating System --</option>
+                        <option value="windows">Windows Server (64-bit)</option>
+                        <option value="linux">Linux (64-bit)</option>
+                        <option value="unix">UNIX (AIX/Solaris)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Physical Memory (GB) <span class="required">*</span></label>
+                    <input type="number" id="physMemory" placeholder="e.g., 256" min="1" step="0.5" required>
+                    <div class="input-help">Total available RAM on the application server</div>
+                </div>
+
+                <div class="form-group">
+                    <label>SAP Kernel Release <span class="required">*</span></label>
+                    <select id="kernelVersion" required>
+                        <option value="">-- Select Kernel Version --</option>
+                        <option value="7.40">7.40 (and above)</option>
+                        <option value="7.21">7.21 to 7.39</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Number of Dialog Work Processes</label>
+                    <input type="number" id="wpDia" placeholder="e.g., 30" min="1" value="30">
+                    <div class="input-help">Default: 30 for application server</div>
+                </div>
+
+                <div class="input-row">
+                    <div class="form-group">
+                        <label>Batch Work Processes</label>
+                        <input type="number" id="wpBtc" placeholder="e.g., 20" min="0" value="20">
+                    </div>
+                    <div class="form-group">
+                        <label>Spool Work Processes</label>
+                        <input type="number" id="wpSpo" placeholder="e.g., 1" min="0" value="1">
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <div class="form-group">
+                    <label>Other Applications Running on VM</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="hasDatabase">
+                        <label class="checkbox-label" for="hasDatabase">Database Server</label>
+                    </div>
+                    <div class="checkbox-group" style="margin-top: 8px;">
+                        <input type="checkbox" id="hasOtherApp">
+                        <label class="checkbox-label" for="hasOtherApp">Other Application Instance</label>
+                    </div>
+                </div>
+
+                <div id="dbMemoryGroup" style="display: none;">
+                    <div class="form-group">
+                        <label>Memory Reserved for Database (GB)</label>
+                        <input type="number" id="dbMemory" placeholder="e.g., 128" min="1" step="0.5">
+                        <div class="input-help">Enter memory required by database (SAP HANA, etc.)</div>
+                    </div>
+                </div>
+
+                <div id="otherAppMemoryGroup" style="display: none;">
+                    <div class="form-group">
+                        <label>Memory Reserved for Other App (GB)</label>
+                        <input type="number" id="otherAppMemory" placeholder="e.g., 32" min="1" step="0.5">
+                        <div class="input-help">Enter memory required by other application</div>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <div class="form-group">
+                    <label>Upload SAP Profile (Optional)</label>
+                    <div class="file-upload-area" id="uploadArea">
+                        <div class="upload-icon">📄</div>
+                        <p>Drag & drop profile file here or click to select</p>
+                        <input type="file" id="profileFile" style="display: none;">
+                        <div class="filename" id="fileName"></div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="calculateZAMM()">Calculate ZAMM</button>
+                    <button class="btn-secondary" onclick="resetForm()">Reset</button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="card" id="resultsCard" style="display: none;">
+                <h2>ZAMM Calculated Values</h2>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('summary')">Summary</button>
+                    <button class="tab" onclick="showTab('detailed')">Detailed</button>
+                    <button class="tab" onclick="showTab('linux')">Linux Specific</button>
+                </div>
+
+                <div id="summary" class="tab-content active">
+                    <div class="results-grid" id="summaryGrid"></div>
+                </div>
+
+                <div id="detailed" class="tab-content">
+                    <div id="detailedResults"></div>
+                </div>
+
+                <div id="linux" class="tab-content">
+                    <div id="linuxResults"></div>
+                </div>
+
+                <div id="zamm-status"></div>
+            </div>
+        </div>
+
+        <!-- Comparison Section -->
+        <div class="card" id="comparisonCard" style="display: none;">
+            <h2>Profile Validation & Comparison</h2>
+            <div id="profileStatus"></div>
+            <div id="comparisonResults"></div>
+        </div>
+
+        <!-- Report Section -->
+        <div class="card" id="reportCard" style="display: none;">
+            <h2>Detailed Analysis & Action Items</h2>
+            
+            <div class="button-group">
+                <button class="btn-success" onclick="generateReport()">📊 Generate PDF Report</button>
+                <button class="btn-secondary" onclick="copyToClipboard()">📋 Copy Parameters</button>
+            </div>
+
+            <div id="analysisSection"></div>
+
+            <div class="section-divider"></div>
+
+            <h3 style="margin-top: 25px; margin-bottom: 15px;">Action Items & Notes</h3>
+            <div id="actionItemsContainer"></div>
+        </div>
+
+        <!-- OSS Notes Reference -->
+        <div class="card">
+            <h2>Reference OSS Notes</h2>
+            <div style="display: grid; gap: 15px;">
+                <div class="oss-note">
+                    <h4>88416 - Zero administration memory management for the ABAP server</h4>
+                    <p><strong>Component:</strong> BC-OP-NT (Windows)</p>
+                    <p><strong>Released:</strong> 25.01.2024 | <strong>Version:</strong> 45</p>
+                    <p><strong>Applicability:</strong> Windows Server, SAP Kernel 7.40+</p>
+                    <p>Describes ZAMM functionality on Windows including PHYS_MEMSIZE parameter configuration.</p>
+                    <a href="https://me.sap.com/notes/88416" target="_blank">→ View SAP Note 88416</a>
+                </div>
+
+                <div class="oss-note">
+                    <h4>941735 - SAP memory management system for 64-bit Linux systems</h4>
+                    <p><strong>Component:</strong> BC-OP-LNX (Linux)</p>
+                    <p><strong>Released:</strong> 04.05.2018 | <strong>Version:</strong> 11</p>
+                    <p><strong>Applicability:</strong> Linux 64-bit systems, SAP Kernel 7.10+</p>
+                    <p>Details es/implementation parameter (STD vs MAP) and Linux-specific memory management.</p>
+                    <a href="https://me.sap.com/notes/941735" target="_blank">→ View SAP Note 941735</a>
+                </div>
+
+                <div class="oss-note">
+                    <h4>1518419 - Windows Pagefile Sizing and Configuration</h4>
+                    <p><strong>Component:</strong> BC-OP-NT (Windows)</p>
+                    <p><strong>Released:</strong> 17.04.2024 | <strong>Version:</strong> 15</p>
+                    <p><strong>Applicability:</strong> Windows Server with SAP VIEW memory model</p>
+                    <p>Recommendations for pagefile sizing: minimum 2x RAM for production systems.</p>
+                    <a href="https://me.sap.com/notes/1518419" target="_blank">→ View SAP Note 1518419</a>
+                </div>
+
+                <div class="oss-note">
+                    <h4>2085980 - New features in memory management as of Kernel Release 7.40</h4>
+                    <p><strong>Component:</strong> BC-CST-MM (Memory Management)</p>
+                    <p><strong>Released:</strong> 13.09.2018 | <strong>Version:</strong> 11</p>
+                    <p><strong>Applicability:</strong> SAP Kernel 7.40+</p>
+                    <p>Abolition of classic ROLL memory, availability of ZAMM on UNIX platforms, new EM/TOTAL_SIZE_MB parameter.</p>
+                    <a href="https://me.sap.com/notes/2085980" target="_blank">→ View SAP Note 2085980</a>
+                </div>
+
+                <div class="oss-note">
+                    <h4>3681846 - Zero Administration Memory Management for ABAP on Linux/Unix</h4>
+                    <p><strong>Component:</strong> BC-OP-LNX (Linux)</p>
+                    <p><strong>Released:</strong> 13.11.2025 | <strong>Version:</strong> 1</p>
+                    <p><strong>Applicability:</strong> Linux/UNIX SAP Netweaver 7.40+</p>
+                    <p>Clarification on ZAMM implementation for Linux/UNIX systems complementing SAP Note 88416.</p>
+                    <a href="https://me.sap.com/notes/3681846" target="_blank">→ View SAP Note 3681846</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let calculationState = {
+            osType: '',
+            physMemory: 0,
+            kernelVersion: '',
+            wpDia: 30,
+            wpBtc: 20,
+            wpSpo: 1,
+            hasDatabase: false,
+            dbMemory: 0,
+            hasOtherApp: false,
+            otherAppMemory: 0,
+            profileData: null,
+            results: null
+        };
+
+        // Event Listeners
+        document.getElementById('hasDatabase').addEventListener('change', function() {
+            document.getElementById('dbMemoryGroup').style.display = this.checked ? 'block' : 'none';
+            if (!this.checked) document.getElementById('dbMemory').value = '';
+        });
+
+        document.getElementById('hasOtherApp').addEventListener('change', function() {
+            document.getElementById('otherAppMemoryGroup').style.display = this.checked ? 'block' : 'none';
+            if (!this.checked) document.getElementById('otherAppMemory').value = '';
+        });
+
+        // File Upload
+        const uploadArea = document.getElementById('uploadArea');
+        const profileFile = document.getElementById('profileFile');
+
+        uploadArea.addEventListener('click', () => profileFile.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                handleFileUpload(e.dataTransfer.files[0]);
+            }
+        });
+
+        profileFile.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        function handleFileUpload(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                calculationState.profileData = e.target.result;
+                document.getElementById('fileName').textContent = `✓ File loaded: ${file.name}`;
+            };
+            reader.readAsText(file);
+        }
+
+        // Tab functionality
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ZAMM Calculation Logic
+        function calculateZAMM() {
+            // Validation
+            if (!document.getElementById('osType').value) {
+                alert('Please select an Operating System');
+                return;
+            }
+            if (!document.getElementById('physMemory').value) {
+                alert('Please enter Physical Memory');
+                return;
+            }
+            if (!document.getElementById('kernelVersion').value) {
+                alert('Please select Kernel Version');
+                return;
+            }
+
+            // Update state
+            calculationState.osType = document.getElementById('osType').value;
+            calculationState.physMemory = parseFloat(document.getElementById('physMemory').value);
+            calculationState.kernelVersion = document.getElementById('kernelVersion').value;
+            calculationState.wpDia = parseInt(document.getElementById('wpDia').value) || 30;
+            calculationState.wpBtc = parseInt(document.getElementById('wpBtc').value) || 0;
+            calculationState.wpSpo = parseInt(document.getElementById('wpSpo').value) || 0;
+            calculationState.hasDatabase = document.getElementById('hasDatabase').checked;
+            calculationState.dbMemory = parseFloat(document.getElementById('dbMemory').value) || 0;
+            calculationState.hasOtherApp = document.getElementById('hasOtherApp').checked;
+            calculationState.otherAppMemory = parseFloat(document.getElementById('otherAppMemory').value) || 0;
+
+            // Calculate ZAMM
+            calculationState.results = performZAMMCalculation(calculationState);
+
+            // Display Results
+            displayResults(calculationState.results);
+            document.getElementById('resultsCard').style.display = 'block';
+            document.getElementById('reportCard').style.display = 'block';
+
+            // Check profile if uploaded
+            if (calculationState.profileData) {
+                validateProfile(calculationState.profileData, calculationState.results);
+            }
+
+            // Scroll to results
+            document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function performZAMMCalculation(state) {
+            const results = {
+                osType: state.osType,
+                kernelVersion: state.kernelVersion,
+                totalPhysMemory: state.physMemory,
+                reservedMemory: 0,
+                availableForSAP: 0,
+                physMemsize: 0,
+                emInitialSize: 0,
+                emTotalSize: 0,
+                pagefileSize: 0,
+                esImplementation: '',
+                recommendedParameters: {},
+                warnings: [],
+                info: []
+            };
+
+            // Calculate reserved memory
+            let reserved = 0;
+            if (state.hasDatabase && state.dbMemory > 0) {
+                reserved += state.dbMemory;
+            }
+            if (state.hasOtherApp && state.otherAppMemory > 0) {
+                reserved += state.otherAppMemory;
+            }
+            results.reservedMemory = reserved;
+            results.availableForSAP = state.physMemory - reserved;
+
+            if (results.availableForSAP <= 0) {
+                results.warnings.push("ERROR: Reserved memory exceeds physical memory!");
+                return results;
+            }
+
+            // OS-specific calculations
+            if (state.osType === 'windows') {
+                calculateWindowsParameters(results, state);
+            } else if (state.osType === 'linux' || state.osType === 'unix') {
+                calculateLinuxUnixParameters(results, state);
+            }
+
+            return results;
+        }
+
+        function calculateWindowsParameters(results, state) {
+            // SAP Note 88416 - Windows ZAMM
+            const sapMemory = results.availableForSAP;
+            
+            // PHYS_MEMSIZE = size of main memory
+            results.physMemsize = sapMemory;
+            results.recommendedParameters['PHYS_MEMSIZE'] = sapMemory;
+
+            // Extended Memory calculation
+            // em/initial_size_MB: initially set to min(512000, $(PHYS_MEMSIZE) * 0.7)
+            const maxEM = 512000;
+            results.emInitialSize = Math.min(maxEM, sapMemory * 1024 * 0.7);
+            results.recommendedParameters['em/initial_size_MB'] = Math.floor(results.emInitialSize);
+
+            // em/max_size_MB or pagefile size approach
+            const em_max = sapMemory * 1024 * 0.9;
+            results.recommendedParameters['em/max_size_MB'] = Math.floor(em_max);
+
+            // Pagefile sizing (SAP Note 1518419)
+            // Current recommendation: at least 2x RAM for production systems
+            results.pagefileSize = sapMemory * 2;
+            results.recommendedParameters['Pagefile_Size_GB'] = results.pagefileSize;
+
+            // Additional Windows parameters
+            results.recommendedParameters['EM/TOTAL_SIZE_MB'] = Math.floor(sapMemory * 1024 * 0.7);
+            results.recommendedParameters['abap/heaplimit'] = Math.floor(sapMemory * 1024 / (state.wpDia || 30));
+
+            results.info.push("✓ ZAMM is available on Windows for Kernel 7.40+");
+            results.info.push("✓ All memory parameters are automatically derived from PHYS_MEMSIZE");
+            results.info.push(`✓ Pagefile should be configured as fixed size: ${results.pagefileSize} GB`);
+
+            if (sapMemory >= 256) {
+                results.info.push("✓ System has sufficient memory for production use");
+            } else {
+                results.warnings.push("⚠ Consider increasing physical memory for optimal performance");
+            }
+        }
+
+        function calculateLinuxUnixParameters(results, state) {
+            // SAP Note 941735 & 3681846 - Linux/UNIX ZAMM
+            const sapMemory = results.availableForSAP;
+
+            results.esImplementation = state.kernelVersion === '7.40' ? 'STD' : 'MAP (legacy)';
+            results.recommendedParameters['es/implementation'] = results.esImplementation;
+
+            // For 64-bit systems, use STD implementation
+            if (state.kernelVersion === '7.40') {
+                results.recommendedParameters['es/implementation'] = 'std';
+                
+                // em/initial_size_MB
+                const initialEM = Math.min(512000, sapMemory * 1024 * 0.7);
+                results.emInitialSize = initialEM;
+                results.recommendedParameters['em/initial_size_MB'] = Math.floor(initialEM);
+
+                results.info.push("✓ STD implementation (es/implementation=std) recommended for 64-bit");
+                results.info.push("✓ All user contexts displayed in same address space");
+            } else {
+                results.recommendedParameters['es/implementation'] = 'map';
+                results.info.push("⚠ MAP implementation (legacy) - consider upgrading to 7.40+");
+            }
+
+            // Linux/UNIX specific parameters
+            results.recommendedParameters['EM/TOTAL_SIZE_MB'] = Math.floor(sapMemory * 1024 * 0.7);
+            results.recommendedParameters['em/blocksize_KB'] = 4096;
+            results.recommendedParameters['em/global_area_MB'] = Math.floor(sapMemory * 1024 * 0.15);
+            results.recommendedParameters['abap/shared_objects_size_MB'] = Math.floor(sapMemory * 1024 * 0.1);
+
+            results.info.push(`✓ Available SAP memory: ${sapMemory} GB`);
+            results.info.push("✓ All parameters automatically derived from available memory");
+        }
+
+        function displayResults(results) {
+            // Summary Tab
+            const summaryGrid = document.getElementById('summaryGrid');
+            summaryGrid.innerHTML = `
+                <div class="result-card">
+                    <div class="result-label">Available for SAP</div>
+                    <div class="result-value">${results.availableForSAP.toFixed(2)}<span class="result-unit">GB</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-label">PHYS_MEMSIZE</div>
+                    <div class="result-value">${results.physMemsize.toFixed(2)}<span class="result-unit">GB</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-label">Initial EM Size</div>
+                    <div class="result-value">${Math.floor(results.emInitialSize)}<span class="result-unit">MB</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-label">Pagefile/VM</div>
+                    <div class="result-value">${results.pagefileSize > 0 ? results.pagefileSize.toFixed(1) : 'Auto'}<span class="result-unit">${results.pagefileSize > 0 ? 'GB' : ''}</span></div>
+                </div>
+            `;
+
+            // ZAMM Status
+            const zammStatus = document.getElementById('zamm-status');
+            let statusHTML = '<div class="alert alert-success"><strong>✓ ZAMM Configuration:</strong> All values calculated automatically</div>';
+            
+            results.warnings.forEach(warn => {
+                statusHTML += `<div class="alert alert-warning"><strong>⚠ Warning:</strong> ${warn}</div>`;
+            });
+            
+            results.info.forEach(info => {
+                statusHTML += `<div class="alert alert-info">${info}</div>`;
+            });
+            
+            zammStatus.innerHTML = statusHTML;
+
+            // Detailed Tab
+            const detailedResults = document.getElementById('detailedResults');
+            let detailedHTML = '<table class="comparison-table"><thead><tr><th>Parameter</th><th>Calculated Value</th><th>Unit</th></tr></thead><tbody>';
+            
+            for (const [param, value] of Object.entries(results.recommendedParameters)) {
+                const unit = getParameterUnit(param);
+                detailedHTML += `<tr><td><strong>${param}</strong></td><td><code>${typeof value === 'number' ? value.toFixed(value > 10000 ? 0 : 2) : value}</code></td><td>${unit}</td></tr>`;
+            }
+            
+            detailedHTML += '</tbody></table>';
+            detailedResults.innerHTML = detailedHTML;
+
+            // Linux Specific Tab (only show for Linux/UNIX)
+            if (results.osType === 'linux' || results.osType === 'unix') {
+                const linuxResults = document.getElementById('linux');
+                linuxResults.innerHTML = generateLinuxGuidance(results);
+            }
+        }
+
+        function getParameterUnit(param) {
+            const units = {
+                'PHYS_MEMSIZE': 'GB',
+                'em/initial_size_MB': 'MB',
+                'em/max_size_MB': 'MB',
+                'EM/TOTAL_SIZE_MB': 'MB',
+                'abap/heaplimit': 'MB',
+                'abap/shared_objects_size_MB': 'MB',
+                'em/global_area_MB': 'MB',
+                'em/blocksize_KB': 'KB',
+                'Pagefile_Size_GB': 'GB'
+            };
+            return units[param] || '-';
+        }
+
+        function generateLinuxGuidance(results) {
+            return `
+                <div class="alert alert-info">
+                    <strong>SAP Note 941735 & 3681846 - Linux/UNIX Memory Management:</strong>
+                </div>
+                <div style="margin-top: 15px;">
+                    <h4>es/implementation Parameter</h4>
+                    <p><strong>Current Setting:</strong> ${results.recommendedParameters['es/implementation'] || 'std'}</p>
+                    <p>On 64-bit Linux systems (Kernel 7.10+), use <code>es/implementation=std</code> (STD implementation).</p>
+                    <p>The MAP implementation is legacy and was primarily for 32-bit systems.</p>
+                    
+                    <div class="impact-box" style="margin-top: 15px;">
+                        <h5>STD Implementation Benefits:</h5>
+                        <ul>
+                            <li>All user contexts displayed in same address space</li>
+                            <li>Simpler memory management</li>
+                            <li>Supports larger memory allocations</li>
+                            <li>Recommended for Kernel 7.40+</li>
+                        </ul>
+                    </div>
+
+                    <h4 style="margin-top: 20px;">Memory Areas (SAP Note 941735):</h4>
+                    <p>In STD implementation, shared memory areas include:</p>
+                    <ul style="margin-left: 20px;">
+                        <li><code>em/global_area_MB</code>: Global shared data area</li>
+                        <li><code>abap/shared_objects_size_MB</code>: Shared objects (programs, tables)</li>
+                        <li><code>EM/TOTAL_SIZE_MB</code>: Total extended memory pool</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function validateProfile(profileContent, calculatedResults) {
+            document.getElementById('comparisonCard').style.display = 'block';
+            
+            const extractedParams = extractProfileParameters(profileContent);
+            let profileStatus = '<div class="alert alert-info"><strong>Profile Validation:</strong> Checking uploaded profile...</div>';
+
+            // Check ZAMM Status
+            const zamm_enabled = profileContent.includes('PHYS_MEMSIZE') || 
+                                 (!profileContent.includes('em/initial_size_MB') && 
+                                  !profileContent.includes('em/max_size_MB'));
+            
+            if (zamm_enabled) {
+                profileStatus += '<div class="alert alert-success"><strong>✓ ZAMM Status:</strong> ZAMM appears to be enabled or should be enabled</div>';
+            } else {
+                profileStatus += '<div class="alert alert-warning"><strong>⚠ ZAMM Status:</strong> ZAMM may not be fully enabled. Manual parameters detected.</div>';
+            }
+
+            // Comparison table
+            let comparisonHTML = '<table class="comparison-table"><thead><tr><th>Parameter</th><th>Calculated (ZAMM)</th><th>Current Profile</th><th>Status</th></tr></thead><tbody>';
+            
+            const criticalParams = ['PHYS_MEMSIZE', 'em/initial_size_MB', 'em/max_size_MB', 'EM/TOTAL_SIZE_MB'];
+            
+            criticalParams.forEach(param => {
+                const calculated = calculatedResults.recommendedParameters[param];
+                const current = extractedParams[param] || 'NOT SET';
+                
+                let statusClass = 'diff-ok';
+                let statusText = '✓ OK';
+                
+                if (current !== 'NOT SET' && calculated) {
+                    const calcNum = typeof calculated === 'string' ? parseFloat(calculated) : calculated;
+                    const currNum = typeof current === 'string' ? parseFloat(current) : current;
+                    
+                    if (currNum < calcNum * 0.9) {
+                        statusClass = 'diff-lower';
+                        statusText = '⚠ LOWER';
+                    } else if (currNum > calcNum * 1.1) {
+                        statusClass = 'diff-higher';
+                        statusText = '⚠ HIGHER';
+                    }
+                }
+                
+                comparisonHTML += `<tr class="${statusClass}"><td><strong>${param}</strong></td><td>${calculated || '-'}</td><td>${current}</td><td>${statusText}</td></tr>`;
+            });
+            
+            comparisonHTML += '</tbody></table>';
+
+            document.getElementById('profileStatus').innerHTML = profileStatus;
+            document.getElementById('comparisonResults').innerHTML = comparisonHTML;
+
+            // Generate action items
+            generateActionItems(extractedParams, calculatedResults);
+        }
+
+        function extractProfileParameters(content) {
+            const params = {};
+            const lines = content.split('\n');
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line.startsWith('#') && line.includes('=')) {
+                    const [key, value] = line.split('=').map(s => s.trim());
+                    params[key] = value;
+                }
+            });
+            
+            return params;
+        }
+
+        function generateActionItems(profileParams, calculated) {
+            let actionHTML = '';
+            const actionItemsContainer = document.getElementById('actionItemsContainer');
+
+            // Check each parameter
+            const checks = [
+                {
+                    param: 'PHYS_MEMSIZE',
+                    calculated: calculated.recommendedParameters['PHYS_MEMSIZE'],
+                    title: 'Physical Memory Size',
+                    impact: 'Not setting PHYS_MEMSIZE properly will prevent ZAMM from functioning. The system will not automatically adjust memory parameters based on physical memory.'
+                },
+                {
+                    param: 'em/initial_size_MB',
+                    calculated: calculated.recommendedParameters['em/initial_size_MB'],
+                    title: 'Extended Memory Initial Size',
+                    impact: 'If set too low, user contexts will not have enough memory, causing work process terminations. If too high, system may exhaust memory on startup.'
+                },
+                {
+                    param: 'EM/TOTAL_SIZE_MB',
+                    calculated: calculated.recommendedParameters['EM/TOTAL_SIZE_MB'],
+                    title: 'Total Extended Memory Size',
+                    impact: 'The total EM pool size limits the maximum memory available to all user contexts. Insufficient size leads to ROLL-OVER operations and performance degradation.'
+                }
+            ];
+
+            checks.forEach(check => {
+                const current = profileParams[check.param];
+                const calcValue = typeof check.calculated === 'number' ? Math.floor(check.calculated) : check.calculated;
+                
+                actionHTML += `
+                    <div class="print-section" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 6px;">
+                        <h4 style="color: var(--sap-blue); margin-bottom: 10px;">${check.title}</h4>
+                        <p><strong>Parameter:</strong> ${check.param}</p>
+                        <p><strong>Calculated Value:</strong> ${calcValue}</p>
+                        <p><strong>Current Value:</strong> ${current || 'NOT SET'}</p>
+                        
+                        ${current && current !== calcValue ? `
+                            <div class="impact-box">
+                                <h5>Impact if Wrong:</h5>
+                                <p>${check.impact}</p>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="action-notes">
+                            <label><strong>Action to Take:</strong></label>
+                            <textarea class="action-note-text" data-param="${check.param}"></textarea>
+                        </div>
+                    </div>
+                `;
+            });
+
+            actionItemsContainer.innerHTML = actionHTML;
+        }
+
+        function generateReport() {
+            const element = document.getElementById('reportCard');
+            const opt = {
+                margin: 10,
+                filename: 'SAP-ZAMM-Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function copyToClipboard() {
+            if (!calculationState.results) return;
+            
+            let text = 'SAP ZAMM Calculated Parameters:\n\n';
+            for (const [param, value] of Object.entries(calculationState.results.recommendedParameters)) {
+                text += `${param} = ${value}\n`;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Parameters copied to clipboard!');
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('osType').value = '';
+            document.getElementById('physMemory').value = '';
+            document.getElementById('kernelVersion').value = '';
+            document.getElementById('wpDia').value = '30';
+            document.getElementById('wpBtc').value = '20';
+            document.getElementById('wpSpo').value = '1';
+            document.getElementById('hasDatabase').checked = false;
+            document.getElementById('hasOtherApp').checked = false;
+            document.getElementById('dbMemoryGroup').style.display = 'none';
+            document.getElementById('otherAppMemoryGroup').style.display = 'none';
+            document.getElementById('profileFile').value = '';
+            document.getElementById('fileName').textContent = '';
+            document.getElementById('resultsCard').style.display = 'none';
+            document.getElementById('comparisonCard').style.display = 'none';
+            document.getElementById('reportCard').style.display = 'none';
+            calculationState = { ...calculationState, results: null };
+        }
+    </script>
+</body>
+</html>

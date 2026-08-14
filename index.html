@@ -1,1238 +1,946 @@
-<!DOCTYPE html>
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+							</style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAP ZAMM Calculator - Zero Administration Memory Management</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #0066cc;
-            --primary-dark: #004494;
-            --accent: #ff6600;
-            --accent-light: #ffb380;
-            --success: #2dcc71;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --bg-light: #f5f7fa;
-            --bg-white: #ffffff;
-            --text-dark: #1a1a1a;
-            --text-light: #666666;
-            --border-light: #ddd;
-            --sap-blue: #003366;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-            color: var(--text-dark);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--sap-blue) 0%, var(--primary) 100%);
-            color: white;
-            padding: 40px 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0, 51, 102, 0.15);
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.95;
-        }
-
-        .header-badge {
-            display: inline-block;
-            background: var(--accent);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        @media (max-width: 1200px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: var(--bg-white);
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            transition: box-shadow 0.3s ease, transform 0.2s ease;
-        }
-
-        .card:hover {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-        }
-
-        .card h2 {
-            color: var(--sap-blue);
-            font-size: 1.4em;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid var(--primary);
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-dark);
-            font-size: 0.95em;
-        }
-
-        label .required {
-            color: var(--danger);
-        }
-
-        .input-help {
-            font-size: 0.85em;
-            color: var(--text-light);
-            margin-top: 5px;
-            font-style: italic;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 2px solid var(--border-light);
-            border-radius: 6px;
-            font-size: 0.95em;
-            font-family: inherit;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: var(--primary);
-        }
-
-        .checkbox-label {
-            margin-bottom: 0;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .input-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 25px;
-        }
-
-        button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.95em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            flex: 1;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--bg-light);
-            color: var(--text-dark);
-            border: 2px solid var(--primary);
-        }
-
-        .btn-secondary:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #27ae60;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .results-section {
-            margin-top: 30px;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            border-left: 4px solid;
-        }
-
-        .alert-info {
-            background: #d1ecf1;
-            border-left-color: #0c5460;
-            color: #0c5460;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            border-left-color: #155724;
-            color: #155724;
-        }
-
-        .alert-warning {
-            background: #fff3cd;
-            border-left-color: #856404;
-            color: #856404;
-        }
-
-        .alert-danger {
-            background: #f8d7da;
-            border-left-color: #721c24;
-            color: #721c24;
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .result-card {
-            background: var(--bg-light);
-            border: 2px solid var(--border-light);
-            padding: 18px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-
-        .result-card:hover {
-            border-color: var(--primary);
-            background: white;
-        }
-
-        .result-label {
-            font-size: 0.85em;
-            color: var(--text-light);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .result-value {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: var(--primary);
-            font-family: 'Courier New', monospace;
-        }
-
-        .result-unit {
-            font-size: 0.8em;
-            color: var(--text-light);
-            margin-left: 5px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 600;
-            margin-top: 8px;
-        }
-
-        .status-enabled {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-disabled {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 0.9em;
-        }
-
-        .comparison-table thead {
-            background: var(--primary);
-            color: white;
-        }
-
-        .comparison-table th {
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-        }
-
-        .comparison-table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-light);
-        }
-
-        .comparison-table tbody tr:hover {
-            background: var(--bg-light);
-        }
-
-        .diff-lower {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .diff-higher {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .diff-ok {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            border-bottom: 2px solid var(--border-light);
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .tab {
-            padding: 12px 20px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--text-light);
-            transition: all 0.2s;
-        }
-
-        .tab:hover {
-            color: var(--primary);
-        }
-
-        .tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .oss-note {
-            background: #e8f4f8;
-            border-left: 4px solid var(--primary);
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-
-        .oss-note h4 {
-            color: var(--sap-blue);
-            margin-bottom: 8px;
-        }
-
-        .oss-note a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .oss-note a:hover {
-            text-decoration: underline;
-        }
-
-        .section-divider {
-            height: 2px;
-            background: linear-gradient(to right, transparent, var(--border-light), transparent);
-            margin: 30px 0;
-        }
-
-        .action-notes {
-            background: var(--bg-light);
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 10px;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .print-section {
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-
-        @media print {
-            .container {
-                max-width: 100%;
-                padding: 0;
-            }
-
-            .button-group {
-                display: none;
-            }
-
-            .card {
-                page-break-inside: avoid;
-                box-shadow: none;
-                border: 1px solid #ddd;
-            }
-        }
-
-        .file-upload-area {
-            border: 2px dashed var(--border-light);
-            border-radius: 8px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.2s;
-            cursor: pointer;
-            background: var(--bg-light);
-        }
-
-        .file-upload-area:hover {
-            border-color: var(--primary);
-            background: white;
-        }
-
-        .file-upload-area.dragover {
-            border-color: var(--accent);
-            background: #fff8f0;
-        }
-
-        .upload-icon {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-
-        .filename {
-            font-size: 0.9em;
-            color: var(--text-light);
-            margin-top: 10px;
-        }
-
-        .impact-box {
-            background: #fff3cd;
-            border-left: 4px solid var(--warning);
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 15px;
-        }
-
-        .impact-box h5 {
-            color: #856404;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .impact-box ul {
-            margin-left: 20px;
-            color: #856404;
-        }
-
-        .impact-box li {
-            margin-bottom: 5px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAP ZAMM Calculator v4 – Work Process Analysis</title>
+<style>
+:root {
+  --sap-blue:#0a6ed1; --sap-dark:#003d7a; --sap-light:#e8f1fb;
+  --ok:#107e3e; --ok-bg:#f0fdf4;
+  --warn:#e9730c; --warn-bg:#fff8f0;
+  --err:#bb0000; --err-bg:#fff0f0;
+  --info:#0a6ed1; --info-bg:#e8f1fb;
+  --border:#d1d5db; --bg:#f3f4f6; --card:#ffffff;
+  --text:#1f2937; --muted:#6b7280;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;}
+header{background:linear-gradient(135deg,var(--sap-dark),var(--sap-blue));color:#fff;padding:18px 28px;display:flex;align-items:center;gap:16px;box-shadow:0 3px 10px rgba(0,0,0,.2);}
+header h1{font-size:18px;font-weight:700;margin-bottom:2px;}
+header p{font-size:12px;opacity:.85;}
+.wrap{max-width:1280px;margin:24px auto;padding:0 16px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:22px;margin-bottom:22px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.card-title{font-size:15px;font-weight:700;color:var(--sap-dark);border-bottom:3px solid var(--sap-blue);padding-bottom:8px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.step-badge{background:var(--sap-blue);color:#fff;border-radius:50%;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:6px;font-size:14px;color:var(--text);background:#fff;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--sap-blue);box-shadow:0 0 0 3px rgba(10,110,209,.12);}
+input[type=file]{padding:8px;border:2px dashed var(--border);background:#fafafa;cursor:pointer;}
+input[type=number]{min-width:0;}
+.hint{font-size:11px;color:var(--muted);margin-top:4px;}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;}
+button{padding:10px 20px;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .2s;}
+.btn-primary{background:var(--sap-blue);color:#fff;}
+.btn-primary:hover{background:var(--sap-dark);}
+.btn-secondary{background:#6b7280;color:#fff;}
+.btn-secondary:hover{background:#4b5563;}
+.btn-success{background:var(--ok);color:#fff;}
+.btn-success:hover{background:#065f46;}
+.btn-excel{background:#1D6F42;color:#fff;}
+.btn-excel:hover{background:#155232;}
+.tbl-wrap{overflow-x:auto;margin-top:12px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--sap-blue);color:#fff;padding:9px 10px;text-align:left;font-weight:600;}
+td{padding:8px 10px;border-bottom:1px solid #e5e7eb;vertical-align:top;}
+tr:nth-child(even) td{background:#f8fafc;}
+.badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap;}
+.badge-ok{background:#f0fdf4;color:#107e3e;border:1px solid #a7f3c7;}
+.badge-warn{background:#fff8f0;color:#e9730c;border:1px solid #fed7aa;}
+.badge-err{background:#fff0f0;color:#bb0000;border:1px solid #fca5a5;}
+.badge-info{background:#e8f1fb;color:#0a6ed1;border:1px solid #93c5fd;}
+.banner{padding:14px 18px;border-radius:8px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px;font-size:13px;}
+.banner-icon{font-size:22px;flex-shrink:0;}
+.banner-ok{background:#f0fdf4;border:1px solid #a7f3c7;color:#065f46;}
+.banner-warn{background:#fff8f0;border:1px solid #fed7aa;color:#92400e;}
+.banner-err{background:#fff0f0;border:1px solid #fca5a5;color:#991b1b;}
+.banner-info{background:#e8f1fb;border:1px solid #93c5fd;color:#1e3a5f;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px;}
+.summary-box{border-radius:8px;padding:14px;text-align:center;border:1px solid transparent;}
+.summary-box .val{font-size:22px;font-weight:800;line-height:1.2;}
+.summary-box .lbl{font-size:11px;font-weight:600;text-transform:uppercase;margin-top:3px;opacity:.8;}
+.sb-blue{background:#e8f1fb;border-color:#93c5fd;color:#003d7a;}
+.sb-green{background:#f0fdf4;border-color:#a7f3c7;color:#065f46;}
+.sb-orange{background:#fff8f0;border-color:#fed7aa;color:#92400e;}
+.sb-red{background:#fff0f0;border-color:#fca5a5;color:#991b1b;}
+.sb-purple{background:#f5f3ff;border-color:#c4b5fd;color:#4c1d95;}
+.wp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:12px;}
+.wp-card{border:1px solid var(--border);border-radius:8px;padding:14px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.wp-card h4{font-size:13px;font-weight:700;color:#003d7a;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #e8f1fb;}
+.wp-stat{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0;border-bottom:1px solid #f3f4f6;}
+.wp-stat:last-child{border-bottom:none;}
+.wp-stat .k{color:var(--muted);font-weight:600;}
+.wp-stat .v{font-weight:700;color:var(--text);}
+.progress-bar-wrap{background:#e5e7eb;border-radius:20px;height:12px;margin:8px 0;}
+.progress-bar{height:12px;border-radius:20px;transition:width .5s ease;}
+.pb-green{background:linear-gradient(90deg,#107e3e,#22c55e);}
+.pb-orange{background:linear-gradient(90deg,#e9730c,#fb923c);}
+.pb-red{background:linear-gradient(90deg,#bb0000,#ef4444);}
+.suggestion-card{border-left:4px solid var(--warn);background:var(--warn-bg);border-radius:0 8px 8px 0;padding:12px 16px;margin:8px 0;}
+.suggestion-card.ok{border-left-color:var(--ok);background:var(--ok-bg);}
+.suggestion-card.err{border-left-color:var(--err);background:var(--err-bg);}
+.suggestion-card.info{border-left-color:var(--sap-blue);background:var(--info-bg);}
+.suggestion-card h5{font-size:13px;font-weight:700;margin-bottom:5px;}
+.suggestion-card p{font-size:12px;color:#374151;line-height:1.65;}
+.file-pill{display:inline-flex;align-items:center;gap:6px;background:#e8f1fb;color:#0a6ed1;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;margin:3px;}
+code{font-family:'Courier New',monospace;font-size:12px;background:#f1f5f9;padding:1px 4px;border-radius:3px;}
+.hidden{display:none;}
+.section-title{font-size:14px;font-weight:700;color:#003d7a;margin:18px 0 10px;display:flex;align-items:center;gap:6px;}
+.manual-wp-section{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin-top:14px;}
+.manual-wp-section h4{font-size:13px;font-weight:700;color:#003d7a;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.profile-source-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#e8f1fb;color:#0a6ed1;border:1px solid #93c5fd;}
+@media(max-width:600px){header{flex-direction:column;}.btn-row{flex-direction:column;}}
+@media print{header,.btn-row,button,.manual-wp-section,.grid,.card-title .step-badge{display:none!important;}
+  .card{box-shadow:none;page-break-inside:avoid;border:1px solid #ccc;}body{background:#fff;font-size:12px;}
+  .hidden{display:block!important;}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🔧 SAP ZAMM Calculator</h1>
-            <p>Zero Administration Memory Management Configuration Tool</p>
-            <div class="header-badge">SAP Kernel 7.40+</div>
-        </div>
+<header>
+  <div style="font-size:36px;">🧠</div>
+  <div>
+    <h1>SAP ZAMM Calculator v4 – Work Process Analysis</h1>
+    <p>Kernel ≥ 7.40 · DIA / BTC / UPD / UPD2 / SPO Detection · Memory Tuning Suggestions · Report Generation</p>
+    <p style="margin-top:4px;font-size:11px;opacity:.75;">
+      SAP Notes:
+      <a href="https://me.sap.com/notes/88416"   target="_blank" style="color:#aecfef">88416</a> ·
+      <a href="https://me.sap.com/notes/941735"  target="_blank" style="color:#aecfef">941735</a> ·
+      <a href="https://me.sap.com/notes/2085980" target="_blank" style="color:#aecfef">2085980</a> ·
+      <a href="https://me.sap.com/notes/1518419" target="_blank" style="color:#aecfef">1518419</a> ·
+      <a href="https://me.sap.com/notes/3681846" target="_blank" style="color:#aecfef">3681846</a>
+    </p>
+  </div>
+</header>
 
-        <!-- Main Content -->
-        <div class="main-grid">
-            <!-- Input Section -->
-            <div class="card">
-                <h2>Configuration Input</h2>
-                
-                <div class="form-group">
-                    <label>Operating System <span class="required">*</span></label>
-                    <select id="osType" required>
-                        <option value="">-- Select Operating System --</option>
-                        <option value="windows">Windows Server (64-bit)</option>
-                        <option value="linux">Linux (64-bit)</option>
-                        <option value="unix">UNIX (AIX/Solaris)</option>
-                    </select>
-                </div>
+<div class="wrap">
 
-                <div class="form-group">
-                    <label>Physical Memory (GB) <span class="required">*</span></label>
-                    <input type="number" id="physMemory" placeholder="e.g., 256" min="1" step="0.5" required>
-                    <div class="input-help">Total available RAM on the application server</div>
-                </div>
-
-                <div class="form-group">
-                    <label>SAP Kernel Release <span class="required">*</span></label>
-                    <select id="kernelVersion" required>
-                        <option value="">-- Select Kernel Version --</option>
-                        <option value="7.40">7.40 (and above)</option>
-                        <option value="7.21">7.21 to 7.39</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Number of Dialog Work Processes</label>
-                    <input type="number" id="wpDia" placeholder="e.g., 30" min="1" value="30">
-                    <div class="input-help">Default: 30 for application server</div>
-                </div>
-
-                <div class="input-row">
-                    <div class="form-group">
-                        <label>Batch Work Processes</label>
-                        <input type="number" id="wpBtc" placeholder="e.g., 20" min="0" value="20">
-                    </div>
-                    <div class="form-group">
-                        <label>Spool Work Processes</label>
-                        <input type="number" id="wpSpo" placeholder="e.g., 1" min="0" value="1">
-                    </div>
-                </div>
-
-                <div class="section-divider"></div>
-
-                <div class="form-group">
-                    <label>Other Applications Running on VM</label>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="hasDatabase">
-                        <label class="checkbox-label" for="hasDatabase">Database Server</label>
-                    </div>
-                    <div class="checkbox-group" style="margin-top: 8px;">
-                        <input type="checkbox" id="hasOtherApp">
-                        <label class="checkbox-label" for="hasOtherApp">Other Application Instance</label>
-                    </div>
-                </div>
-
-                <div id="dbMemoryGroup" style="display: none;">
-                    <div class="form-group">
-                        <label>Memory Reserved for Database (GB)</label>
-                        <input type="number" id="dbMemory" placeholder="e.g., 128" min="1" step="0.5">
-                        <div class="input-help">Enter memory required by database (SAP HANA, etc.)</div>
-                    </div>
-                </div>
-
-                <div id="otherAppMemoryGroup" style="display: none;">
-                    <div class="form-group">
-                        <label>Memory Reserved for Other App (GB)</label>
-                        <input type="number" id="otherAppMemory" placeholder="e.g., 32" min="1" step="0.5">
-                        <div class="input-help">Enter memory required by other application</div>
-                    </div>
-                </div>
-
-                <div class="section-divider"></div>
-
-                <div class="form-group">
-                    <label>Upload SAP Profile (Optional)</label>
-                    <div class="file-upload-area" id="uploadArea">
-                        <div class="upload-icon">📄</div>
-                        <p>Drag & drop profile file here or click to select</p>
-                        <input type="file" id="profileFile" style="display: none;">
-                        <div class="filename" id="fileName"></div>
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn-primary" onclick="calculateZAMM()">Calculate ZAMM</button>
-                    <button class="btn-secondary" onclick="resetForm()">Reset</button>
-                </div>
-            </div>
-
-            <!-- Results Section -->
-            <div class="card" id="resultsCard" style="display: none;">
-                <h2>ZAMM Calculated Values</h2>
-                
-                <div class="tabs">
-                    <button class="tab active" onclick="showTab('summary')">Summary</button>
-                    <button class="tab" onclick="showTab('detailed')">Detailed</button>
-                    <button class="tab" onclick="showTab('linux')">Linux Specific</button>
-                </div>
-
-                <div id="summary" class="tab-content active">
-                    <div class="results-grid" id="summaryGrid"></div>
-                </div>
-
-                <div id="detailed" class="tab-content">
-                    <div id="detailedResults"></div>
-                </div>
-
-                <div id="linux" class="tab-content">
-                    <div id="linuxResults"></div>
-                </div>
-
-                <div id="zamm-status"></div>
-            </div>
-        </div>
-
-        <!-- Comparison Section -->
-        <div class="card" id="comparisonCard" style="display: none;">
-            <h2>Profile Validation & Comparison</h2>
-            <div id="profileStatus"></div>
-            <div id="comparisonResults"></div>
-        </div>
-
-        <!-- Report Section -->
-        <div class="card" id="reportCard" style="display: none;">
-            <h2>Detailed Analysis & Action Items</h2>
-            
-            <div class="button-group">
-                <button class="btn-success" onclick="generateReport()">📊 Generate PDF Report</button>
-                <button class="btn-secondary" onclick="copyToClipboard()">📋 Copy Parameters</button>
-            </div>
-
-            <div id="analysisSection"></div>
-
-            <div class="section-divider"></div>
-
-            <h3 style="margin-top: 25px; margin-bottom: 15px;">Action Items & Notes</h3>
-            <div id="actionItemsContainer"></div>
-        </div>
-
-        <!-- OSS Notes Reference -->
-        <div class="card">
-            <h2>Reference OSS Notes</h2>
-            <div style="display: grid; gap: 15px;">
-                <div class="oss-note">
-                    <h4>88416 - Zero administration memory management for the ABAP server</h4>
-                    <p><strong>Component:</strong> BC-OP-NT (Windows)</p>
-                    <p><strong>Released:</strong> 25.01.2024 | <strong>Version:</strong> 45</p>
-                    <p><strong>Applicability:</strong> Windows Server, SAP Kernel 7.40+</p>
-                    <p>Describes ZAMM functionality on Windows including PHYS_MEMSIZE parameter configuration.</p>
-                    <a href="https://me.sap.com/notes/88416" target="_blank">→ View SAP Note 88416</a>
-                </div>
-
-                <div class="oss-note">
-                    <h4>941735 - SAP memory management system for 64-bit Linux systems</h4>
-                    <p><strong>Component:</strong> BC-OP-LNX (Linux)</p>
-                    <p><strong>Released:</strong> 04.05.2018 | <strong>Version:</strong> 11</p>
-                    <p><strong>Applicability:</strong> Linux 64-bit systems, SAP Kernel 7.10+</p>
-                    <p>Details es/implementation parameter (STD vs MAP) and Linux-specific memory management.</p>
-                    <a href="https://me.sap.com/notes/941735" target="_blank">→ View SAP Note 941735</a>
-                </div>
-
-                <div class="oss-note">
-                    <h4>1518419 - Windows Pagefile Sizing and Configuration</h4>
-                    <p><strong>Component:</strong> BC-OP-NT (Windows)</p>
-                    <p><strong>Released:</strong> 17.04.2024 | <strong>Version:</strong> 15</p>
-                    <p><strong>Applicability:</strong> Windows Server with SAP VIEW memory model</p>
-                    <p>Recommendations for pagefile sizing: minimum 2x RAM for production systems.</p>
-                    <a href="https://me.sap.com/notes/1518419" target="_blank">→ View SAP Note 1518419</a>
-                </div>
-
-                <div class="oss-note">
-                    <h4>2085980 - New features in memory management as of Kernel Release 7.40</h4>
-                    <p><strong>Component:</strong> BC-CST-MM (Memory Management)</p>
-                    <p><strong>Released:</strong> 13.09.2018 | <strong>Version:</strong> 11</p>
-                    <p><strong>Applicability:</strong> SAP Kernel 7.40+</p>
-                    <p>Abolition of classic ROLL memory, availability of ZAMM on UNIX platforms, new EM/TOTAL_SIZE_MB parameter.</p>
-                    <a href="https://me.sap.com/notes/2085980" target="_blank">→ View SAP Note 2085980</a>
-                </div>
-
-                <div class="oss-note">
-                    <h4>3681846 - Zero Administration Memory Management for ABAP on Linux/Unix</h4>
-                    <p><strong>Component:</strong> BC-OP-LNX (Linux)</p>
-                    <p><strong>Released:</strong> 13.11.2025 | <strong>Version:</strong> 1</p>
-                    <p><strong>Applicability:</strong> Linux/UNIX SAP Netweaver 7.40+</p>
-                    <p>Clarification on ZAMM implementation for Linux/UNIX systems complementing SAP Note 88416.</p>
-                    <a href="https://me.sap.com/notes/3681846" target="_blank">→ View SAP Note 3681846</a>
-                </div>
-            </div>
-        </div>
+<!-- SECTION 1 – INPUT -->
+<div class="card">
+  <div class="card-title"><span class="step-badge">1</span> System Configuration</div>
+  <div class="grid">
+    <div>
+      <label>SAP Application Server OS</label>
+      <select id="selOS">
+        <option value="windows">Windows 64-bit</option>
+        <option value="linux" selected>Linux 64-bit</option>
+        <option value="unix">UNIX / HP-UX / Solaris</option>
+        <option value="aix">IBM AIX</option>
+      </select>
     </div>
+    <div>
+      <label>Total Physical RAM (GB)</label>
+      <input type="number" id="inpRAM" value="128" min="1" step="1">
+    </div>
+    <div>
+      <label>Other Instance on same VM?</label>
+      <select id="selHasOther" onchange="toggleOther()">
+        <option value="no">No</option>
+        <option value="yes">Yes</option>
+      </select>
+    </div>
+    <div id="divOtherMem" class="hidden">
+      <label>RAM for OTHER instance (GB)</label>
+      <input type="number" id="inpOtherMem" value="0" min="0" step="1">
+    </div>
+    <div>
+      <label>OS Reserve (GB)</label>
+      <input type="number" id="inpOSReserve" value="2" min="0" step="1">
+      <div class="hint">Recommended ≥ 2 GB for OS [Note 941735]</div>
+    </div>
+  </div>
 
-    <script>
-        // State management
-        let calculationState = {
-            osType: '',
-            physMemory: 0,
-            kernelVersion: '',
-            wpDia: 30,
-            wpBtc: 20,
-            wpSpo: 1,
-            hasDatabase: false,
-            dbMemory: 0,
-            hasOtherApp: false,
-            otherAppMemory: 0,
-            profileData: null,
-            results: null
-        };
+  <!-- Profile Upload – accept ALL file types -->
+  <div style="margin-top:18px;">
+    <label>Upload SAP Profiles (Optional – all file types accepted)</label>
+    <input type="file" id="inpFiles" multiple>
+    <div class="hint" style="margin-top:6px;">Accepts any file type: default profile, instance profile, START profile, etc.</div>
+    <div id="divFilePills" style="margin-top:8px;"></div>
+  </div>
 
-        // Event Listeners
-        document.getElementById('hasDatabase').addEventListener('change', function() {
-            document.getElementById('dbMemoryGroup').style.display = this.checked ? 'block' : 'none';
-            if (!this.checked) document.getElementById('dbMemory').value = '';
-        });
+  <!-- Work Process Configuration -->
+  <div class="manual-wp-section" style="margin-top:18px;">
+    <h4>
+      ⚙️ Work Process Configuration
+      <span id="wpSourceBadge" class="profile-source-badge hidden">📋 Populated from Profile</span>
+      <span style="font-size:11px;font-weight:400;color:var(--muted);">(Values editable – changes take effect on next Calculate)</span>
+    </h4>
+    <div class="grid-3">
+      <div>
+        <label>DIA – Dialog</label>
+        <input type="number" id="wpDIA" value="10" min="0" max="999" step="1">
+        <div class="hint">Min 10 for productive [Note 88416]</div>
+      </div>
+      <div>
+        <label>BTC – Background</label>
+        <input type="number" id="wpBTC" value="3" min="0" max="999" step="1">
+        <div class="hint">Min 2 recommended</div>
+      </div>
+      <div>
+        <label>UPD – Update (V1)</label>
+        <input type="number" id="wpUPD" value="3" min="0" max="999" step="1">
+        <div class="hint">Min 1 if updates active</div>
+      </div>
+      <div>
+        <label>UPD2 – Update (V2)</label>
+        <input type="number" id="wpUPD2" value="1" min="0" max="999" step="1">
+        <div class="hint">Optional (async updates)</div>
+      </div>
+      <div>
+        <label>SPO – Spool</label>
+        <input type="number" id="wpSPO" value="1" min="0" max="999" step="1">
+        <div class="hint">Min 1 required</div>
+      </div>
+    </div>
+  </div>
 
-        document.getElementById('hasOtherApp').addEventListener('change', function() {
-            document.getElementById('otherAppMemoryGroup').style.display = this.checked ? 'block' : 'none';
-            if (!this.checked) document.getElementById('otherAppMemory').value = '';
-        });
+  <div class="btn-row">
+    <button class="btn-primary" onclick="calculate()">⚡ Calculate &amp; Analyse</button>
+    <button class="btn-secondary" onclick="clearAll()">🗑️ Clear All</button>
+  </div>
+</div>
 
-        // File Upload
-        const uploadArea = document.getElementById('uploadArea');
-        const profileFile = document.getElementById('profileFile');
+<!-- SECTION 2 – CALCULATED ZAMM PARAMETERS -->
+<div class="card hidden" id="cardCalc">
+  <div class="card-title"><span class="step-badge">2</span> Calculated ZAMM Parameters</div>
+  <div class="summary-grid" id="divCalcSummary"></div>
+  <div id="divCalcBanner"></div>
+  <div class="tbl-wrap"><table id="tblCalc"></table></div>
+</div>
 
-        uploadArea.addEventListener('click', () => profileFile.click());
-        
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+<!-- SECTION 3 – WORK PROCESS ANALYSIS -->
+<div class="card hidden" id="cardWP">
+  <div class="card-title"><span class="step-badge">3</span> Work Process Analysis &amp; Memory Impact</div>
+  <div id="divWPContent"></div>
+</div>
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
+<!-- SECTION 4 – FULL REPORT -->
+<div class="card hidden" id="cardReport">
+  <div class="card-title"><span class="step-badge">4</span> Consolidated Report</div>
+  <div id="divReport"></div>
+  <div class="btn-row" style="margin-top:16px;">
+    <button class="btn-success" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <button class="btn-excel" onclick="exportToExcel()">📊 Export to Excel (.xlsx)</button>
+  </div>
+</div>
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            if (e.dataTransfer.files.length) {
-                handleFileUpload(e.dataTransfer.files[0]);
-            }
-        });
+</div><!-- /wrap -->
 
-        profileFile.addEventListener('change', (e) => {
-            if (e.target.files.length) {
-                handleFileUpload(e.target.files[0]);
-            }
-        });
+<!-- SheetJS CDN for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-        function handleFileUpload(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                calculationState.profileData = e.target.result;
-                document.getElementById('fileName').textContent = `✓ File loaded: ${file.name}`;
-            };
-            reader.readAsText(file);
-        }
+<script>
+/* =========================================================
+   GLOBAL STATE
+   ========================================================= */
+var G = {
+  profileTexts : [],
+  calc         : {},
+  wpData       : {},
+  physMB       : 0,
+  os           : 'linux',
+  ramGB        : 0,
+  otherGB      : 0,
+  osResGB      : 2,
+  wpSource     : 'manual',
+  lastWpResult : null
+};
 
-        // Tab functionality
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-        }
+/* =========================================================
+   WORK PROCESS METADATA
+   ========================================================= */
+var WP_META = {
+  dia : {
+    param:'rdisp/wp_no_dia', label:'DIA', fullName:'Dialog',
+    icon:'🟦', minProd:10, minDev:2, usesEM:true, usesPaging:true,
+    description:'Handles all interactive user requests. Each DIA process can consume up to ztta/roll_extension bytes of EM.',
+    sapNote:'88416'
+  },
+  btc : {
+    param:'rdisp/wp_no_btc', label:'BTC', fullName:'Background (Batch)',
+    icon:'🟩', minProd:2, minDev:1, usesEM:true, usesPaging:true,
+    description:'Handles scheduled background jobs. Consumes EM similarly to DIA under peak load.',
+    sapNote:'88416'
+  },
+  upd : {
+    param:'rdisp/wp_no_vb', label:'UPD', fullName:'Update V1',
+    icon:'🟨', minProd:1, minDev:1, usesEM:true, usesPaging:false,
+    description:'Processes V1 (synchronous) update requests. Moderate EM consumer; heap bounded by abap/heap_area_nondia.',
+    sapNote:'88416'
+  },
+  upd2: {
+    param:'rdisp/wp_no_vb2', label:'UPD2', fullName:'Update V2',
+    icon:'🟧', minProd:0, minDev:0, usesEM:true, usesPaging:false,
+    description:'Processes V2 (asynchronous) update tasks. Optional; 0 is valid if V2 updates are disabled.',
+    sapNote:'88416'
+  },
+  spo : {
+    param:'rdisp/wp_no_spo', label:'SPO', fullName:'Spool',
+    icon:'🟪', minProd:1, minDev:1, usesEM:false, usesPaging:false,
+    description:'Handles print spool requests. Minimal EM impact; mainly I/O bound.',
+    sapNote:'88416'
+  }
+};
 
-        // ZAMM Calculation Logic
-        function calculateZAMM() {
-            // Validation
-            if (!document.getElementById('osType').value) {
-                alert('Please select an Operating System');
-                return;
-            }
-            if (!document.getElementById('physMemory').value) {
-                alert('Please enter Physical Memory');
-                return;
-            }
-            if (!document.getElementById('kernelVersion').value) {
-                alert('Please select Kernel Version');
-                return;
-            }
+/* =========================================================
+   HELPERS
+   ========================================================= */
+function getEl(id)  { return document.getElementById(id); }
+function show(id)   { getEl(id).classList.remove('hidden'); }
+function hide(id)   { getEl(id).classList.add('hidden'); }
+function fmtMB(v)   { return Number(v||0).toLocaleString()+' MB'; }
+function fmtNum(v)  { return Number(v||0).toLocaleString(); }
+function fmtKB(v)   { return Number(v||0).toLocaleString()+' KB'; }
+function stripTags(s){ return (s||'').replace(/<[^>]+>/g,''); }
 
-            // Update state
-            calculationState.osType = document.getElementById('osType').value;
-            calculationState.physMemory = parseFloat(document.getElementById('physMemory').value);
-            calculationState.kernelVersion = document.getElementById('kernelVersion').value;
-            calculationState.wpDia = parseInt(document.getElementById('wpDia').value) || 30;
-            calculationState.wpBtc = parseInt(document.getElementById('wpBtc').value) || 0;
-            calculationState.wpSpo = parseInt(document.getElementById('wpSpo').value) || 0;
-            calculationState.hasDatabase = document.getElementById('hasDatabase').checked;
-            calculationState.dbMemory = parseFloat(document.getElementById('dbMemory').value) || 0;
-            calculationState.hasOtherApp = document.getElementById('hasOtherApp').checked;
-            calculationState.otherAppMemory = parseFloat(document.getElementById('otherAppMemory').value) || 0;
+function noteLink(id){
+  return '<a href="https://me.sap.com/notes/'+id+'" target="_blank" style="color:#0a6ed1">Note '+id+'</a>';
+}
+function mergeAssign(target,source){
+  if(!source) return target;
+  for(var k in source){ if(Object.prototype.hasOwnProperty.call(source,k)) target[k]=source[k]; }
+  return target;
+}
+function toggleOther(){
+  getEl('divOtherMem').style.display = getEl('selHasOther').value==='yes' ? '' : 'none';
+}
 
-            // Calculate ZAMM
-            calculationState.results = performZAMMCalculation(calculationState);
+/* =========================================================
+   FILE HANDLING – all file types accepted
+   ========================================================= */
+function handleFiles(){
+  G.profileTexts=[];
+  var files=getEl('inpFiles').files;
+  var pills=getEl('divFilePills');
+  pills.innerHTML='';
+  if(!files.length){ hide('wpSourceBadge'); return; }
+  Array.from(files).forEach(function(f){
+    var pill=document.createElement('span');
+    pill.className='file-pill';
+    pill.textContent='📄 '+f.name;
+    pills.appendChild(pill);
+    var reader=new FileReader();
+    reader.onload=function(e){
+      G.profileTexts.push({name:f.name,text:e.target.result});
+      if(G.profileTexts.length===files.length) populateWPFromProfile();
+    };
+    reader.readAsText(f);
+  });
+}
+getEl('inpFiles').addEventListener('change',handleFiles);
 
-            // Display Results
-            displayResults(calculationState.results);
-            document.getElementById('resultsCard').style.display = 'block';
-            document.getElementById('reportCard').style.display = 'block';
+/* =========================================================
+   PROFILE PARSER
+   ========================================================= */
+function parseProfile(text){
+  var params={};
+  text.split(/\r?\n/).forEach(function(raw){
+    var line=raw.trim();
+    if(!line||line.charAt(0)==='#') return;
+    var m=line.match(/^([A-Za-z0-9_\/\.]+)\s*[=:]\s*([^#]+)/);
+    if(m) params[m[1].trim()]=m[2].trim();
+  });
+  return params;
+}
 
-            // Check profile if uploaded
-            if (calculationState.profileData) {
-                validateProfile(calculationState.profileData, calculationState.results);
-            }
+/* =========================================================
+   POPULATE WP FIELDS FROM PROFILE
+   ========================================================= */
+function populateWPFromProfile(){
+  var merged={};
+  G.profileTexts.forEach(function(pt){ mergeAssign(merged,parseProfile(pt.text)); });
+  var found=false;
+  Object.keys(WP_META).forEach(function(key){
+    var pval=merged[WP_META[key].param];
+    if(pval!==undefined && pval!==''){
+      var val=Math.max(0,parseInt(pval,10)||0);
+      getEl('wp'+key.toUpperCase()).value=val;
+      found=true;
+    }
+  });
+  if(found){ show('wpSourceBadge'); G.wpSource='profile'; }
+  else      { hide('wpSourceBadge'); G.wpSource='manual'; }
+}
 
-            // Scroll to results
-            document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth' });
-        }
+/* =========================================================
+   ZAMM CALCULATION
+   ========================================================= */
+function calcZAMM(physMB,os){
+  var c={}, PM=physMB;
+  c['PHYS_MEMSIZE']=PM;
+  c['em/initial_size_MB']= os==='aix' ? Math.floor(PM*0.7) : Math.min(512000,Math.floor(PM*0.7));
+  c['EM/TOTAL_SIZE_MB']=c['em/initial_size_MB'];
+  c['em/max_size_MB']= os==='windows' ? Math.min(32000,Math.floor(PM*1.5)) : c['em/initial_size_MB'];
+  var blk=Math.ceil(c['em/initial_size_MB']*1024/100000/4096)*4096;
+  c['em/blocksize_KB']=Math.max(4096,blk);
+  c['em/global_area_MB']=Math.min(Math.floor(c['em/initial_size_MB']*0.05),32000);
+  var bufA=Math.ceil(c['em/initial_size_MB']*1024*0.3/4096)*4096;
+  var bufB=Math.ceil(Math.sqrt(PM/1024)*1024*1024);
+  c['abap/buffersize']=Math.min(bufA,bufB);
+  c['abap/programs']=Math.floor(c['abap/buffersize']/4);
+  c['abap/heaplimit']=150000000;
+  c['abap/heap_area_dia']=2000000000;
+  c['abap/heap_area_nondia']= os==='windows' ? 0 : 2000000000;
+  c['abap/heap_area_total']= os==='windows' ? PM*1024*1024 : Math.max(PM*1024*1024*0.1,4000000000);
+  var pgshm=Math.min(1000+40*Math.max(5,Math.floor((PM-128)/20)),96000);
+  c['rdisp/PG_SHM']=Math.max(1000,pgshm);
+  c['rdisp/PG_MAXFS']=c['rdisp/PG_SHM'];
+  c['ztta/roll_extension']=Math.min(Math.floor(c['em/initial_size_MB']*1024*1024*0.5),2000000000);
+  c['ztta/roll_area']=65536;
+  c['rdisp/roll_SHM']=100;
+  c['rdisp/roll_MAXFS']=16000;
+  return c;
+}
 
-        function performZAMMCalculation(state) {
-            const results = {
-                osType: state.osType,
-                kernelVersion: state.kernelVersion,
-                totalPhysMemory: state.physMemory,
-                reservedMemory: 0,
-                availableForSAP: 0,
-                physMemsize: 0,
-                emInitialSize: 0,
-                emTotalSize: 0,
-                pagefileSize: 0,
-                esImplementation: '',
-                recommendedParameters: {},
-                warnings: [],
-                info: []
-            };
+/* =========================================================
+   GATHER WP COUNTS – always reads live from inputs
+   ========================================================= */
+function gatherWPCounts(){
+  return {
+    source: G.wpSource,
+    dia : Math.max(0,parseInt(getEl('wpDIA').value,10)||0),
+    btc : Math.max(0,parseInt(getEl('wpBTC').value,10)||0),
+    upd : Math.max(0,parseInt(getEl('wpUPD').value,10)||0),
+    upd2: Math.max(0,parseInt(getEl('wpUPD2').value,10)||0),
+    spo : Math.max(0,parseInt(getEl('wpSPO').value,10)||0)
+  };
+}
 
-            // Calculate reserved memory
-            let reserved = 0;
-            if (state.hasDatabase && state.dbMemory > 0) {
-                reserved += state.dbMemory;
-            }
-            if (state.hasOtherApp && state.otherAppMemory > 0) {
-                reserved += state.otherAppMemory;
-            }
-            results.reservedMemory = reserved;
-            results.availableForSAP = state.physMemory - reserved;
+/* =========================================================
+   WORK PROCESS ANALYSIS
+   ========================================================= */
+function analyseWorkProcesses(counts,calc,physMB){
+  var emInitMB=calc['em/initial_size_MB'];
+  var emInitB=emInitMB*1024*1024;
+  var rollExt=calc['ztta/roll_extension'];
+  var pgSHM=calc['rdisp/PG_SHM'];
+  var totalWP=counts.dia+counts.btc+counts.upd+counts.upd2+counts.spo;
+  var emConsumers=counts.dia+counts.btc+counts.upd+counts.upd2;
+  var worstCaseEM_B=(counts.dia*rollExt)+(counts.btc*rollExt)+
+                    (counts.upd*Math.floor(rollExt*0.5))+(counts.upd2*Math.floor(rollExt*0.5));
+  var worstPct=emInitB>0?(worstCaseEM_B/emInitB)*100:0;
+  var avgPct=worstPct*0.5;
+  var maxRecDiaBtc=rollExt>0?Math.floor(emInitB*0.60/rollExt):999;
+  var headroomB=(emInitB*0.75)-worstCaseEM_B;
+  var addlDiaPossible=rollExt>0?Math.floor(headroomB/rollExt):0;
+  var pagingOk=pgSHM>0&&totalWP>0?(pgSHM/totalWP)>=10:true;
 
-            if (results.availableForSAP <= 0) {
-                results.warnings.push("ERROR: Reserved memory exceeds physical memory!");
-                return results;
-            }
+  var breakdown=[];
+  Object.keys(WP_META).forEach(function(key){
+    var meta=WP_META[key], count=counts[key]||0, emMB=0;
+    if(key==='dia'||key==='btc')       emMB=Math.round(count*rollExt/1024/1024);
+    else if(key==='upd'||key==='upd2') emMB=Math.round(count*rollExt*0.5/1024/1024);
+    var status='ok';
+    if(count<meta.minProd && key!=='upd2') status='warn';
+    if(count===0&&meta.minProd>=1)         status='warn';
+    breakdown.push({key:key,meta:meta,count:count,emMB:emMB,status:status});
+  });
 
-            // OS-specific calculations
-            if (state.osType === 'windows') {
-                calculateWindowsParameters(results, state);
-            } else if (state.osType === 'linux' || state.osType === 'unix') {
-                calculateLinuxUnixParameters(results, state);
-            }
+  var suggestions=[];
 
-            return results;
-        }
+  // EM pressure checks
+  if(worstPct>100){
+    suggestions.push({type:'err',
+      param:'em/initial_size_MB / rdisp/wp_no_dia + rdisp/wp_no_btc',
+      title:'🔴 CRITICAL – EM Overcommit Detected',
+      detail:'Worst-case EM demand ('+(worstCaseEM_B/1024/1024).toFixed(0)+' MB = '+worstPct.toFixed(1)+
+             '% of em/initial_size_MB) exceeds available Extended Memory. Risk: heavy paging / system slowdown. '+
+             'Recommended: (a) Increase PHYS_MEMSIZE and em/initial_size_MB, OR '+
+             '(b) Reduce DIA to ≤ '+Math.max(1,Math.floor(maxRecDiaBtc*0.6))+
+             ' and BTC to ≤ '+Math.max(1,Math.floor(maxRecDiaBtc*0.4))+'. ['+noteLink('88416')+']'
+    });
+  } else if(worstPct>80){
+    suggestions.push({type:'warn',
+      param:'em/initial_size_MB',
+      title:'⚠️ High EM Pressure (> 80%)',
+      detail:'Worst-case EM demand is '+worstPct.toFixed(1)+'% of available Extended Memory. '+
+             'Above the recommended 75% ceiling. Monitor ST02 regularly. '+
+             'Consider increasing em/initial_size_MB or reducing work process count. ['+noteLink('941735')+']'
+    });
+  } else if(worstPct>60){
+    suggestions.push({type:'warn',
+      param:'em/initial_size_MB',
+      title:'⚠️ Moderate EM Pressure (60–80%)',
+      detail:'Worst-case EM demand is '+worstPct.toFixed(1)+'% of available EM. Within safe limits '+
+             'for most workloads. Review ST02 during peak load. ['+noteLink('941735')+']'
+    });
+  }
 
-        function calculateWindowsParameters(results, state) {
-            // SAP Note 88416 - Windows ZAMM
-            const sapMemory = results.availableForSAP;
-            
-            // PHYS_MEMSIZE = size of main memory
-            results.physMemsize = sapMemory;
-            results.recommendedParameters['PHYS_MEMSIZE'] = sapMemory;
+  if(counts.dia>0&&counts.dia<10)
+    suggestions.push({type:'warn',param:'rdisp/wp_no_dia',title:'⚠️ Low DIA Count (< 10)',
+      detail:'Only '+counts.dia+' Dialog processes. Minimum 10 recommended for productive systems. ['+noteLink('88416')+']'});
+  if(counts.btc<2)
+    suggestions.push({type:'warn',param:'rdisp/wp_no_btc',title:'⚠️ Low BTC Count (< 2)',
+      detail:'Only '+counts.btc+' Background process(es). Minimum 2 recommended. ['+noteLink('88416')+']'});
+  if(counts.upd===0)
+    suggestions.push({type:'warn',param:'rdisp/wp_no_vb',title:'⚠️ No UPD (V1 Update) Process',
+      detail:'No V1 Update processes found. At least 1 required if this instance handles DB updates. ['+noteLink('88416')+']'});
+  if(counts.spo===0)
+    suggestions.push({type:'warn',param:'rdisp/wp_no_spo',title:'⚠️ No SPO (Spool) Process',
+      detail:'No Spool processes found. At least 1 required for print output. ['+noteLink('88416')+']'});
+  if(!pagingOk)
+    suggestions.push({type:'warn',param:'rdisp/PG_SHM',title:'⚠️ Paging Buffer Undersized',
+      detail:'rdisp/PG_SHM='+pgSHM+' pages across '+totalWP+' WPs = '+(pgSHM/totalWP).toFixed(1)+
+             ' pages/WP. Recommended ≥ 10 pages/WP. ['+noteLink('88416')+']'});
+  if(worstPct<50&&addlDiaPossible>2)
+    suggestions.push({type:'info',param:'rdisp/wp_no_dia / rdisp/wp_no_btc',
+      title:'✅ Scope to Add More Work Processes',
+      detail:'Current EM utilisation is only '+worstPct.toFixed(1)+'% (worst-case). '+
+             'Based on 75% safe ceiling, up to '+addlDiaPossible+' additional DIA/BTC processes are possible. '+
+             'Suggestion: DIA → '+(counts.dia+Math.ceil(addlDiaPossible*0.7))+
+             ', BTC → '+(counts.btc+Math.floor(addlDiaPossible*0.3))+
+             '. Validate against actual concurrent user count. ['+noteLink('88416')+']'});
 
-            // Extended Memory calculation
-            // em/initial_size_MB: initially set to min(512000, $(PHYS_MEMSIZE) * 0.7)
-            const maxEM = 512000;
-            results.emInitialSize = Math.min(maxEM, sapMemory * 1024 * 0.7);
-            results.recommendedParameters['em/initial_size_MB'] = Math.floor(results.emInitialSize);
+  var paramImpacts=[];
+  var neededEM=worstCaseEM_B/1024/1024;
+  if(neededEM>emInitMB){
+    var sugEM=Math.ceil(neededEM*1.25/1024)*1024;
+    paramImpacts.push({param:'em/initial_size_MB',current:fmtMB(emInitMB),suggested:fmtMB(sugEM),
+      reason:'WP worst-case demand ('+fmtMB(Math.round(neededEM))+') exceeds current EM. Increase PHYS_MEMSIZE or add RAM.',severity:'err'});
+  }
+  var maxRollExt=Math.min(2000000000,Math.floor(emInitB*0.5));
+  if(rollExt<maxRollExt*0.8&&worstPct<50)
+    paramImpacts.push({param:'ztta/roll_extension',current:fmtNum(rollExt)+' B',
+      suggested:fmtNum(maxRollExt)+' B ('+( maxRollExt/1024/1024).toFixed(0)+' MB)',
+      reason:'EM headroom available. Increasing per-WP quota improves large-report performance.',severity:'info'});
+  var recPGSHM=Math.max(1000,totalWP*20);
+  if(pgSHM<recPGSHM)
+    paramImpacts.push({param:'rdisp/PG_SHM',current:fmtNum(pgSHM),
+      suggested:fmtNum(recPGSHM)+' (× 8 KB = '+(recPGSHM*8/1024).toFixed(0)+' MB)',
+      reason:'With '+totalWP+' WPs, paging buffer should be ≥ 20 pages/WP.',severity:'warn'});
 
-            // em/max_size_MB or pagefile size approach
-            const em_max = sapMemory * 1024 * 0.9;
-            results.recommendedParameters['em/max_size_MB'] = Math.floor(em_max);
+  return {counts,totalWP,emConsumers,
+    worstCaseEM_MB:worstCaseEM_B/1024/1024,worstPct,avgPct,
+    rollExt,emInitMB,maxRecDiaBtc,addlDiaPossible,
+    breakdown,suggestions,paramImpacts,pagingOk,pgSHM};
+}
 
-            // Pagefile sizing (SAP Note 1518419)
-            // Current recommendation: at least 2x RAM for production systems
-            results.pagefileSize = sapMemory * 2;
-            results.recommendedParameters['Pagefile_Size_GB'] = results.pagefileSize;
+/* =========================================================
+   MAIN CALCULATE – always reads live WP values from inputs
+   ========================================================= */
+function calculate(){
+  var os     =getEl('selOS').value;
+  var ramGB  =parseFloat(getEl('inpRAM').value)||128;
+  var otherGB=getEl('selHasOther').value==='yes'?(parseFloat(getEl('inpOtherMem').value)||0):0;
+  var osResGB=parseFloat(getEl('inpOSReserve').value)||2;
+  var physMB =Math.round((ramGB-otherGB-osResGB)*1024);
+  if(physMB<=0){ alert('⚠️ Effective PHYS_MEMSIZE is zero or negative. Adjust reserves.'); return; }
 
-            // Additional Windows parameters
-            results.recommendedParameters['EM/TOTAL_SIZE_MB'] = Math.floor(sapMemory * 1024 * 0.7);
-            results.recommendedParameters['abap/heaplimit'] = Math.floor(sapMemory * 1024 / (state.wpDia || 30));
+  G.os=os; G.ramGB=ramGB; G.physMB=physMB; G.otherGB=otherGB; G.osResGB=osResGB;
+  G.calc=calcZAMM(physMB,os);
 
-            results.info.push("✓ ZAMM is available on Windows for Kernel 7.40+");
-            results.info.push("✓ All memory parameters are automatically derived from PHYS_MEMSIZE");
-            results.info.push(`✓ Pagefile should be configured as fixed size: ${results.pagefileSize} GB`);
+  var counts  =gatherWPCounts();
+  var wpResult=analyseWorkProcesses(counts,G.calc,physMB);
+  G.lastWpResult=wpResult;
 
-            if (sapMemory >= 256) {
-                results.info.push("✓ System has sufficient memory for production use");
-            } else {
-                results.warnings.push("⚠ Consider increasing physical memory for optimal performance");
-            }
-        }
+  renderCalcTable(G.calc,os,ramGB,physMB,otherGB,osResGB);
+  renderWPSection(wpResult);
+  buildReport(G.calc,os,ramGB,physMB,otherGB,osResGB,wpResult);
 
-        function calculateLinuxUnixParameters(results, state) {
-            // SAP Note 941735 & 3681846 - Linux/UNIX ZAMM
-            const sapMemory = results.availableForSAP;
+  show('cardCalc'); show('cardWP'); show('cardReport');
+  getEl('cardCalc').scrollIntoView({behavior:'smooth',block:'start'});
+}
 
-            results.esImplementation = state.kernelVersion === '7.40' ? 'STD' : 'MAP (legacy)';
-            results.recommendedParameters['es/implementation'] = results.esImplementation;
+/* =========================================================
+   RENDER – SECTION 2: ZAMM TABLE
+   ========================================================= */
+function renderCalcTable(c,os,ramGB,physMB,otherGB,osResGB){
+  getEl('divCalcSummary').innerHTML=
+    mkBox(ramGB,'Total RAM (GB)','sb-blue')+
+    mkBox(otherGB,'Other Instance (GB)','sb-orange')+
+    mkBox(osResGB,'OS Reserve (GB)','sb-orange')+
+    mkBox((physMB/1024).toFixed(1),'PHYS_MEMSIZE (GB)','sb-green')+
+    mkBox((c['em/initial_size_MB']/1024).toFixed(1),'EM Initial (GB)','sb-blue')+
+    mkBox((c['abap/buffersize']/1024).toFixed(0),'ABAP Buffer (MB)','sb-purple');
 
-            // For 64-bit systems, use STD implementation
-            if (state.kernelVersion === '7.40') {
-                results.recommendedParameters['es/implementation'] = 'std';
-                
-                // em/initial_size_MB
-                const initialEM = Math.min(512000, sapMemory * 1024 * 0.7);
-                results.emInitialSize = initialEM;
-                results.recommendedParameters['em/initial_size_MB'] = Math.floor(initialEM);
+  getEl('divCalcBanner').innerHTML=
+    '<div class="banner banner-info"><span class="banner-icon">ℹ️</span><div>'+
+    '<strong>ZAMM Configuration – OS: '+os.toUpperCase()+'</strong><br>'+
+    'PHYS_MEMSIZE: <strong>'+fmtMB(physMB)+'</strong> &nbsp;·&nbsp; '+
+    'em/initial_size_MB: <strong>'+fmtMB(c['em/initial_size_MB'])+'</strong><br>'+
+    '<small>Calculated per '+noteLink('88416')+' · '+noteLink('941735')+' · '+noteLink('2085980')+'</small>'+
+    '</div></div>';
 
-                results.info.push("✓ STD implementation (es/implementation=std) recommended for 64-bit");
-                results.info.push("✓ All user contexts displayed in same address space");
-            } else {
-                results.recommendedParameters['es/implementation'] = 'map';
-                results.info.push("⚠ MAP implementation (legacy) - consider upgrading to 7.40+");
-            }
+  var rows=[
+    {p:'PHYS_MEMSIZE',         v:fmtMB(physMB),                                                                  note:'88416',  desc:'Effective physical memory for this SAP instance'},
+    {p:'em/initial_size_MB',   v:fmtMB(c['em/initial_size_MB']),                                                 note:'941735', desc:'Initial Extended Memory (70% of PHYS_MEMSIZE, max 512 GB)'},
+    {p:'em/max_size_MB',       v:fmtMB(c['em/max_size_MB']),                                                     note:'2085980',desc:'Maximum EM growth boundary'},
+    {p:'em/blocksize_KB',      v:fmtKB(c['em/blocksize_KB']),                                                    note:'941735', desc:'EM allocation block size (rounded to 4096 KB)'},
+    {p:'em/global_area_MB',    v:fmtMB(c['em/global_area_MB']),                                                  note:'88416',  desc:'Global shared area (5% of initial EM, max 32 GB)'},
+    {p:'abap/buffersize',      v:fmtKB(c['abap/buffersize']),                                                    note:'88416',  desc:'ABAP program buffer'},
+    {p:'abap/heaplimit',       v:fmtNum(c['abap/heaplimit'])+' B (150 MB)',                                      note:'88416',  desc:'Per-WP heap limit before spilling to EM'},
+    {p:'abap/heap_area_dia',   v:fmtNum(c['abap/heap_area_dia'])+' B',                                           note:'88416',  desc:'Max heap per DIA work process'},
+    {p:'abap/heap_area_nondia',v:fmtNum(c['abap/heap_area_nondia'])+' B',                                        note:'88416',  desc:'Max heap per non-DIA WP'},
+    {p:'ztta/roll_extension',  v:fmtNum(c['ztta/roll_extension'])+' B ('+(c['ztta/roll_extension']/1024/1024).toFixed(0)+' MB)', note:'88416', desc:'Max EM per work process (key tuning lever)'},
+    {p:'rdisp/PG_SHM',        v:fmtNum(c['rdisp/PG_SHM'])+' pages ('+(c['rdisp/PG_SHM']*8/1024).toFixed(0)+' MB)', note:'88416', desc:'Shared paging area (× 8 KB/page)'},
+    {p:'rdisp/PG_MAXFS',      v:fmtNum(c['rdisp/PG_MAXFS'])+' pages',                                           note:'88416',  desc:'Max paging file size'}
+  ];
+  var html='<thead><tr><th>Parameter</th><th>Calculated Value</th><th>Description</th><th>SAP Note</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    html+='<tr><td><code>'+r.p+'</code></td><td><strong>'+r.v+'</strong></td><td>'+r.desc+'</td><td>'+noteLink(r.note)+'</td></tr>';
+  });
+  getEl('tblCalc').innerHTML=html+'</tbody>';
+}
 
-            // Linux/UNIX specific parameters
-            results.recommendedParameters['EM/TOTAL_SIZE_MB'] = Math.floor(sapMemory * 1024 * 0.7);
-            results.recommendedParameters['em/blocksize_KB'] = 4096;
-            results.recommendedParameters['em/global_area_MB'] = Math.floor(sapMemory * 1024 * 0.15);
-            results.recommendedParameters['abap/shared_objects_size_MB'] = Math.floor(sapMemory * 1024 * 0.1);
+/* =========================================================
+   RENDER – SECTION 3: WORK PROCESS ANALYSIS
+   ========================================================= */
+function renderWPSection(wpResult){
+  var counts=wpResult.counts;
+  var srcBadge=G.wpSource==='profile'
+    ?'<span class="badge badge-ok">From Profile</span>'
+    :'<span class="badge badge-info">Manual Input</span>';
+  var pb1=wpResult.worstPct>80?'pb-red':wpResult.worstPct>60?'pb-orange':'pb-green';
+  var pb2=wpResult.avgPct>70?'pb-red':wpResult.avgPct>50?'pb-orange':'pb-green';
+  var p1=Math.min(wpResult.worstPct,100), p2=Math.min(wpResult.avgPct,100);
+  var c1=wpResult.worstPct>80?'#bb0000':wpResult.worstPct>60?'#e9730c':'#107e3e';
+  var c2=wpResult.avgPct>70?'#bb0000':wpResult.avgPct>50?'#e9730c':'#107e3e';
 
-            results.info.push(`✓ Available SAP memory: ${sapMemory} GB`);
-            results.info.push("✓ All parameters automatically derived from available memory");
-        }
+  var html='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">'+
+    '<span style="font-size:13px;color:var(--muted);">Data source: </span>'+srcBadge+'</div>';
 
-        function displayResults(results) {
-            // Summary Tab
-            const summaryGrid = document.getElementById('summaryGrid');
-            summaryGrid.innerHTML = `
-                <div class="result-card">
-                    <div class="result-label">Available for SAP</div>
-                    <div class="result-value">${results.availableForSAP.toFixed(2)}<span class="result-unit">GB</span></div>
-                </div>
-                <div class="result-card">
-                    <div class="result-label">PHYS_MEMSIZE</div>
-                    <div class="result-value">${results.physMemsize.toFixed(2)}<span class="result-unit">GB</span></div>
-                </div>
-                <div class="result-card">
-                    <div class="result-label">Initial EM Size</div>
-                    <div class="result-value">${Math.floor(results.emInitialSize)}<span class="result-unit">MB</span></div>
-                </div>
-                <div class="result-card">
-                    <div class="result-label">Pagefile/VM</div>
-                    <div class="result-value">${results.pagefileSize > 0 ? results.pagefileSize.toFixed(1) : 'Auto'}<span class="result-unit">${results.pagefileSize > 0 ? 'GB' : ''}</span></div>
-                </div>
-            `;
+  html+='<div class="summary-grid">'+
+    mkBox(wpResult.totalWP,'Total WPs','sb-blue')+mkBox(counts.dia,'DIA Dialog','sb-blue')+
+    mkBox(counts.btc,'BTC Background','sb-green')+mkBox(counts.upd,'UPD V1 Update','sb-orange')+
+    mkBox(counts.upd2,'UPD2 V2 Update','sb-orange')+mkBox(counts.spo,'SPO Spool','sb-purple')+
+    mkBox(wpResult.emConsumers,'EM Consumers','sb-blue')+'</div>';
 
-            // ZAMM Status
-            const zammStatus = document.getElementById('zamm-status');
-            let statusHTML = '<div class="alert alert-success"><strong>✓ ZAMM Configuration:</strong> All values calculated automatically</div>';
-            
-            results.warnings.forEach(warn => {
-                statusHTML += `<div class="alert alert-warning"><strong>⚠ Warning:</strong> ${warn}</div>`;
-            });
-            
-            results.info.forEach(info => {
-                statusHTML += `<div class="alert alert-info">${info}</div>`;
-            });
-            
-            zammStatus.innerHTML = statusHTML;
+  // Breakdown table
+  html+='<div class="section-title">📋 Work Process Type Breakdown</div>';
+  html+='<div class="tbl-wrap"><table><thead><tr>'+
+    '<th>Type</th><th>Parameter</th><th>Count</th><th>EM Consumer?</th>'+
+    '<th>EM Demand (worst)</th><th>Min Recommended</th><th>Status</th><th>Description</th>'+
+    '</tr></thead><tbody>';
+  wpResult.breakdown.forEach(function(row){
+    var sb=row.status==='ok'?'<span class="badge badge-ok">OK</span>':'<span class="badge badge-warn">Review</span>';
+    var em=row.emMB>0?'<strong>'+fmtMB(row.emMB)+'</strong>':'<span style="color:var(--muted)">Negligible</span>';
+    html+='<tr>'+
+      '<td><strong>'+row.meta.icon+' '+row.meta.label+'</strong><br><span style="color:var(--muted);font-size:11px">'+row.meta.fullName+'</span></td>'+
+      '<td><code>'+row.meta.param+'</code></td>'+
+      '<td><strong style="font-size:16px">'+row.count+'</strong></td>'+
+      '<td>'+(row.meta.usesEM?'✅ Yes':'❌ No')+'</td>'+
+      '<td>'+em+'</td>'+
+      '<td>'+(row.meta.minProd>0?row.meta.minProd:'–')+'</td>'+
+      '<td>'+sb+'</td>'+
+      '<td style="font-size:11px;color:var(--muted)">'+row.meta.description+'</td>'+
+      '</tr>';
+  });
+  html+='</tbody></table></div>';
 
-            // Detailed Tab
-            const detailedResults = document.getElementById('detailedResults');
-            let detailedHTML = '<table class="comparison-table"><thead><tr><th>Parameter</th><th>Calculated Value</th><th>Unit</th></tr></thead><tbody>';
-            
-            for (const [param, value] of Object.entries(results.recommendedParameters)) {
-                const unit = getParameterUnit(param);
-                detailedHTML += `<tr><td><strong>${param}</strong></td><td><code>${typeof value === 'number' ? value.toFixed(value > 10000 ? 0 : 2) : value}</code></td><td>${unit}</td></tr>`;
-            }
-            
-            detailedHTML += '</tbody></table>';
-            detailedResults.innerHTML = detailedHTML;
+  // EM utilisation cards
+  html+='<div class="section-title">📊 Extended Memory (EM) Utilisation</div>';
+  html+='<div class="wp-grid">';
+  html+='<div class="wp-card"><h4>🔴 Worst-Case EM (All WPs Active)</h4>'+
+    '<div class="wp-stat"><span class="k">EM-consuming WPs:</span><span class="v">'+wpResult.emConsumers+'</span></div>'+
+    '<div class="wp-stat"><span class="k">Max EM per DIA/BTC:</span><span class="v">'+(wpResult.rollExt/1024/1024).toFixed(0)+' MB</span></div>'+
+    '<div class="wp-stat"><span class="k">Max EM per UPD/UPD2:</span><span class="v">'+(wpResult.rollExt*0.5/1024/1024).toFixed(0)+' MB</span></div>'+
+    '<div class="wp-stat"><span class="k">Total EM Demand:</span><span class="v">'+fmtMB(Math.round(wpResult.worstCaseEM_MB))+'</span></div>'+
+    '<div class="wp-stat"><span class="k">Available EM:</span><span class="v">'+fmtMB(wpResult.emInitMB)+'</span></div>'+
+    '<div class="progress-bar-wrap"><div class="progress-bar '+pb1+'" style="width:'+p1+'%"></div></div>'+
+    '<div style="font-size:13px;font-weight:700;color:'+c1+'">'+p1.toFixed(1)+'% of EM consumed</div></div>';
+  html+='<div class="wp-card"><h4>🟡 Average-Case EM (~50% concurrency)</h4>'+
+    '<div class="wp-stat"><span class="k">Estimated EM Demand:</span><span class="v">'+fmtMB(Math.round(wpResult.worstCaseEM_MB*0.5))+'</span></div>'+
+    '<div class="wp-stat"><span class="k">Available EM:</span><span class="v">'+fmtMB(wpResult.emInitMB)+'</span></div>'+
+    '<div class="progress-bar-wrap"><div class="progress-bar '+pb2+'" style="width:'+p2+'%"></div></div>'+
+    '<div style="font-size:13px;font-weight:700;color:'+c2+'">'+p2.toFixed(1)+'% of EM consumed</div></div>';
+  var hrmMB=Math.max(0,wpResult.emInitMB*0.75-wpResult.worstCaseEM_MB);
+  html+='<div class="wp-card"><h4>🟢 Headroom &amp; Capacity</h4>'+
+    '<div class="wp-stat"><span class="k">Safe EM Ceiling (75%):</span><span class="v">'+fmtMB(Math.round(wpResult.emInitMB*0.75))+'</span></div>'+
+    '<div class="wp-stat"><span class="k">EM Headroom:</span><span class="v">'+fmtMB(Math.round(hrmMB))+'</span></div>'+
+    '<div class="wp-stat"><span class="k">Max Rec. DIA+BTC:</span><span class="v">'+wpResult.maxRecDiaBtc+'</span></div>'+
+    '<div class="wp-stat"><span class="k">Addl. DIA/BTC Possible:</span><span class="v">'+Math.max(0,wpResult.addlDiaPossible)+'</span></div>'+
+    '<div class="wp-stat"><span class="k">Paging Buffer:</span><span class="v">'+(wpResult.pagingOk?'✅ OK':'⚠️ Low')+'</span></div>'+
+    '</div>';
+  html+='</div>';
 
-            // Linux Specific Tab (only show for Linux/UNIX)
-            if (results.osType === 'linux' || results.osType === 'unix') {
-                const linuxResults = document.getElementById('linux');
-                linuxResults.innerHTML = generateLinuxGuidance(results);
-            }
-        }
+  // Parameter impacts
+  if(wpResult.paramImpacts.length>0){
+    html+='<div class="section-title">🔧 Memory Parameters Impacted by WP Configuration</div>';
+    html+='<div class="tbl-wrap"><table><thead><tr>'+
+      '<th>Parameter</th><th>Current Value</th><th>Suggested Value</th><th>Reason</th><th>Priority</th>'+
+      '</tr></thead><tbody>';
+    wpResult.paramImpacts.forEach(function(pi,i){
+      var sev=pi.severity==='err'?'<span class="badge badge-err">Critical</span>':
+              pi.severity==='warn'?'<span class="badge badge-warn">Recommended</span>':
+              '<span class="badge badge-info">Optional</span>';
+      html+='<tr style="background:'+(i%2?'#f8fafc':'#fff')+'">'+
+        '<td><code><strong>'+pi.param+'</strong></code></td><td>'+pi.current+'</td>'+
+        '<td><strong>'+pi.suggested+'</strong></td>'+
+        '<td style="font-size:12px">'+pi.reason+'</td><td>'+sev+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+  } else {
+    html+='<div class="banner banner-ok" style="margin-top:12px">'+
+      '<span class="banner-icon">✅</span>'+
+      '<div><strong>All memory parameters appropriately sized</strong> for the configured WP count.</div></div>';
+  }
 
-        function getParameterUnit(param) {
-            const units = {
-                'PHYS_MEMSIZE': 'GB',
-                'em/initial_size_MB': 'MB',
-                'em/max_size_MB': 'MB',
-                'EM/TOTAL_SIZE_MB': 'MB',
-                'abap/heaplimit': 'MB',
-                'abap/shared_objects_size_MB': 'MB',
-                'em/global_area_MB': 'MB',
-                'em/blocksize_KB': 'KB',
-                'Pagefile_Size_GB': 'GB'
-            };
-            return units[param] || '-';
-        }
+  // Suggestions
+  html+='<div class="section-title">💡 Tuning Suggestions &amp; Recommendations</div>';
+  if(wpResult.suggestions.length===0){
+    html+='<div class="suggestion-card ok"><h5>✅ Work Process Configuration Looks Good</h5>'+
+      '<p>No memory-related issues detected. Monitor ST02 during peak load.</p></div>';
+  } else {
+    wpResult.suggestions.forEach(function(s){
+      var cls=s.type==='err'?'err':s.type==='info'?'info':'';
+      html+='<div class="suggestion-card '+cls+'"><h5>'+s.title+'</h5>'+
+        '<p><strong>Affected: </strong><code>'+s.param+'</code></p>'+
+        '<p>'+s.detail+'</p></div>';
+    });
+  }
+  getEl('divWPContent').innerHTML=html;
+}
 
-        function generateLinuxGuidance(results) {
-            return `
-                <div class="alert alert-info">
-                    <strong>SAP Note 941735 & 3681846 - Linux/UNIX Memory Management:</strong>
-                </div>
-                <div style="margin-top: 15px;">
-                    <h4>es/implementation Parameter</h4>
-                    <p><strong>Current Setting:</strong> ${results.recommendedParameters['es/implementation'] || 'std'}</p>
-                    <p>On 64-bit Linux systems (Kernel 7.10+), use <code>es/implementation=std</code> (STD implementation).</p>
-                    <p>The MAP implementation is legacy and was primarily for 32-bit systems.</p>
-                    
-                    <div class="impact-box" style="margin-top: 15px;">
-                        <h5>STD Implementation Benefits:</h5>
-                        <ul>
-                            <li>All user contexts displayed in same address space</li>
-                            <li>Simpler memory management</li>
-                            <li>Supports larger memory allocations</li>
-                            <li>Recommended for Kernel 7.40+</li>
-                        </ul>
-                    </div>
+function mkBox(val,lbl,cls){
+  return '<div class="summary-box '+cls+'"><span class="val">'+val+'</span><span class="lbl">'+lbl+'</span></div>';
+}
 
-                    <h4 style="margin-top: 20px;">Memory Areas (SAP Note 941735):</h4>
-                    <p>In STD implementation, shared memory areas include:</p>
-                    <ul style="margin-left: 20px;">
-                        <li><code>em/global_area_MB</code>: Global shared data area</li>
-                        <li><code>abap/shared_objects_size_MB</code>: Shared objects (programs, tables)</li>
-                        <li><code>EM/TOTAL_SIZE_MB</code>: Total extended memory pool</li>
-                    </ul>
-                </div>
-            `;
-        }
+/* =========================================================
+   RENDER – SECTION 4: REPORT
+   ========================================================= */
+function buildReport(c,os,ramGB,physMB,otherGB,osResGB,wpResult){
+  var now=new Date().toLocaleString();
+  var counts=wpResult.counts;
+  var wc=wpResult.worstPct>80?'#bb0000':wpResult.worstPct>60?'#e9730c':'#107e3e';
 
-        function validateProfile(profileContent, calculatedResults) {
-            document.getElementById('comparisonCard').style.display = 'block';
-            
-            const extractedParams = extractProfileParameters(profileContent);
-            let profileStatus = '<div class="alert alert-info"><strong>Profile Validation:</strong> Checking uploaded profile...</div>';
+  var html='<div id="reportContent" style="border:2px solid #0a6ed1;border-radius:8px;padding:20px;background:#f9fbff;">';
+  html+='<h3 style="color:#003d7a;margin-bottom:14px;">📊 SAP ZAMM Analysis Report</h3>';
 
-            // Check ZAMM Status
-            const zamm_enabled = profileContent.includes('PHYS_MEMSIZE') || 
-                                 (!profileContent.includes('em/initial_size_MB') && 
-                                  !profileContent.includes('em/max_size_MB'));
-            
-            if (zamm_enabled) {
-                profileStatus += '<div class="alert alert-success"><strong>✓ ZAMM Status:</strong> ZAMM appears to be enabled or should be enabled</div>';
-            } else {
-                profileStatus += '<div class="alert alert-warning"><strong>⚠ ZAMM Status:</strong> ZAMM may not be fully enabled. Manual parameters detected.</div>';
-            }
+  html+='<table style="width:100%;font-size:13px;margin-bottom:16px;border-collapse:collapse;">';
+  html+='<tr><td style="padding:5px 10px;font-weight:700;width:22%">Generated:</td><td style="padding:5px 10px">'+now+'</td>'+
+            '<td style="padding:5px 10px;font-weight:700;width:22%">OS:</td><td style="padding:5px 10px">'+os.toUpperCase()+'</td></tr>';
+  html+='<tr style="background:#f3f4f6"><td style="padding:5px 10px;font-weight:700">Total RAM:</td><td style="padding:5px 10px">'+ramGB+' GB</td>'+
+            '<td style="padding:5px 10px;font-weight:700">Other Instance:</td><td style="padding:5px 10px">'+otherGB+' GB</td></tr>';
+  html+='<tr><td style="padding:5px 10px;font-weight:700">OS Reserve:</td><td style="padding:5px 10px">'+osResGB+' GB</td>'+
+            '<td style="padding:5px 10px;font-weight:700">PHYS_MEMSIZE:</td><td style="padding:5px 10px">'+fmtMB(physMB)+'</td></tr>';
+  html+='<tr style="background:#f3f4f6"><td style="padding:5px 10px;font-weight:700">Work Processes:</td>'+
+            '<td style="padding:5px 10px" colspan="3">Total: <strong>'+wpResult.totalWP+'</strong> &nbsp;|&nbsp; '+
+            'DIA: <strong>'+counts.dia+'</strong> &nbsp;|&nbsp; BTC: <strong>'+counts.btc+'</strong> &nbsp;|&nbsp; '+
+            'UPD: <strong>'+counts.upd+'</strong> &nbsp;|&nbsp; UPD2: <strong>'+counts.upd2+'</strong> &nbsp;|&nbsp; '+
+            'SPO: <strong>'+counts.spo+'</strong></td></tr>';
+  html+='<tr><td style="padding:5px 10px;font-weight:700">EM Utilisation:</td>'+
+            '<td style="padding:5px 10px" colspan="3">'+
+            'Worst-case: <strong style="color:'+wc+'">'+wpResult.worstPct.toFixed(1)+'%</strong> &nbsp;|&nbsp; '+
+            'Average: <strong>'+wpResult.avgPct.toFixed(1)+'%</strong></td></tr>';
+  html+='</table>';
 
-            // Comparison table
-            let comparisonHTML = '<table class="comparison-table"><thead><tr><th>Parameter</th><th>Calculated (ZAMM)</th><th>Current Profile</th><th>Status</th></tr></thead><tbody>';
-            
-            const criticalParams = ['PHYS_MEMSIZE', 'em/initial_size_MB', 'em/max_size_MB', 'EM/TOTAL_SIZE_MB'];
-            
-            criticalParams.forEach(param => {
-                const calculated = calculatedResults.recommendedParameters[param];
-                const current = extractedParams[param] || 'NOT SET';
-                
-                let statusClass = 'diff-ok';
-                let statusText = '✓ OK';
-                
-                if (current !== 'NOT SET' && calculated) {
-                    const calcNum = typeof calculated === 'string' ? parseFloat(calculated) : calculated;
-                    const currNum = typeof current === 'string' ? parseFloat(current) : current;
-                    
-                    if (currNum < calcNum * 0.9) {
-                        statusClass = 'diff-lower';
-                        statusText = '⚠ LOWER';
-                    } else if (currNum > calcNum * 1.1) {
-                        statusClass = 'diff-higher';
-                        statusText = '⚠ HIGHER';
-                    }
-                }
-                
-                comparisonHTML += `<tr class="${statusClass}"><td><strong>${param}</strong></td><td>${calculated || '-'}</td><td>${current}</td><td>${statusText}</td></tr>`;
-            });
-            
-            comparisonHTML += '</tbody></table>';
+  html+='<h4 style="color:#003d7a;margin:14px 0 8px;">Key Calculated Parameters</h4>';
+  html+='<table style="width:100%;border-collapse:collapse;font-size:12px;">'+
+    '<thead><tr style="background:#0a6ed1;color:#fff">'+
+    '<th style="padding:7px 9px">Parameter</th><th style="padding:7px 9px">Value</th>'+
+    '<th style="padding:7px 9px">Description</th><th style="padding:7px 9px">Note</th>'+
+    '</tr></thead><tbody>';
+  var paramList=[
+    {p:'PHYS_MEMSIZE',        v:fmtMB(physMB),                          d:'Effective physical memory',             n:'88416'},
+    {p:'em/initial_size_MB',  v:fmtMB(c['em/initial_size_MB']),         d:'Initial Extended Memory',               n:'941735'},
+    {p:'em/max_size_MB',      v:fmtMB(c['em/max_size_MB']),             d:'Maximum EM growth',                     n:'2085980'},
+    {p:'em/blocksize_KB',     v:fmtKB(c['em/blocksize_KB']),            d:'EM block size',                         n:'941735'},
+    {p:'em/global_area_MB',   v:fmtMB(c['em/global_area_MB']),          d:'Global shared area',                    n:'88416'},
+    {p:'abap/buffersize',     v:fmtKB(c['abap/buffersize']),            d:'ABAP program buffer',                   n:'88416'},
+    {p:'abap/heaplimit',      v:fmtNum(c['abap/heaplimit'])+' B',       d:'Per-WP heap limit',                     n:'88416'},
+    {p:'ztta/roll_extension', v:fmtNum(c['ztta/roll_extension'])+' B',  d:'Max EM per work process',               n:'88416'},
+    {p:'rdisp/PG_SHM',       v:fmtNum(c['rdisp/PG_SHM'])+' pages',    d:'Paging buffer (× 8 KB)',                n:'88416'}
+  ];
+  paramList.forEach(function(r,i){
+    html+='<tr style="background:'+(i%2?'#f8fafc':'#fff')+'">'+
+      '<td style="padding:6px 9px;border:1px solid #e5e7eb"><code><strong>'+r.p+'</strong></code></td>'+
+      '<td style="padding:6px 9px;border:1px solid #e5e7eb"><strong>'+r.v+'</strong></td>'+
+      '<td style="padding:6px 9px;border:1px solid #e5e7eb;color:#374151">'+r.d+'</td>'+
+      '<td style="padding:6px 9px;border:1px solid #e5e7eb">'+noteLink(r.n)+'</td></tr>';
+  });
+  html+='</tbody></table>';
 
-            document.getElementById('profileStatus').innerHTML = profileStatus;
-            document.getElementById('comparisonResults').innerHTML = comparisonHTML;
+  if(wpResult.paramImpacts.length>0){
+    html+='<h4 style="color:#003d7a;margin:16px 0 8px;">⚠️ Parameters Requiring Change</h4>';
+    html+='<table style="width:100%;border-collapse:collapse;font-size:12px;">'+
+      '<thead><tr style="background:#e9730c;color:#fff">'+
+      '<th style="padding:7px 9px">Parameter</th><th style="padding:7px 9px">Current</th>'+
+      '<th style="padding:7px 9px">Suggested</th><th style="padding:7px 9px">Reason</th>'+
+      '</tr></thead><tbody>';
+    wpResult.paramImpacts.forEach(function(pi,i){
+      html+='<tr style="background:'+(i%2?'#fff8f0':'#fff')+'">'+
+        '<td style="padding:6px 9px;border:1px solid #e5e7eb"><code><strong>'+pi.param+'</strong></code></td>'+
+        '<td style="padding:6px 9px;border:1px solid #e5e7eb">'+pi.current+'</td>'+
+        '<td style="padding:6px 9px;border:1px solid #e5e7eb"><strong>'+pi.suggested+'</strong></td>'+
+        '<td style="padding:6px 9px;border:1px solid #e5e7eb;font-size:11px;color:#374151">'+pi.reason+'</td></tr>';
+    });
+    html+='</tbody></table>';
+  }
 
-            // Generate action items
-            generateActionItems(extractedParams, calculatedResults);
-        }
+  if(wpResult.suggestions.length>0){
+    html+='<h4 style="color:#003d7a;margin:16px 0 8px;">💡 Key Recommendations</h4>';
+    html+='<ol style="margin-left:18px;font-size:12px;line-height:1.8;">';
+    wpResult.suggestions.forEach(function(s){
+      html+='<li><strong>'+s.title.replace(/^[\u{1F534}\u{26A0}\u{2705}\u{2139}]+\s*/u,'')+'</strong> – '+stripTags(s.detail)+'</li>';
+    });
+    html+='</ol>';
+  }
 
-        function extractProfileParameters(content) {
-            const params = {};
-            const lines = content.split('\n');
-            
-            lines.forEach(line => {
-                line = line.trim();
-                if (!line.startsWith('#') && line.includes('=')) {
-                    const [key, value] = line.split('=').map(s => s.trim());
-                    params[key] = value;
-                }
-            });
-            
-            return params;
-        }
+  html+='<div style="margin-top:18px;padding:12px;background:#f3f4f6;border-radius:6px;font-size:11px;color:#6b7280;">'+
+    '<strong>Referenced SAP Notes: </strong>'+
+    noteLink('88416')+' &nbsp;|&nbsp; '+noteLink('941735')+' &nbsp;|&nbsp; '+
+    noteLink('2085980')+' &nbsp;|&nbsp; '+noteLink('1518419')+' &nbsp;|&nbsp; '+noteLink('3681846')+
+    '<br><span style="margin-top:4px;display:inline-block;">This report is advisory only. '+
+    'Always validate against actual workload in ST02 / SM50 / SM66.</span></div>';
+  html+='</div>';
+  getEl('divReport').innerHTML=html;
+}
 
-        function generateActionItems(profileParams, calculated) {
-            let actionHTML = '';
-            const actionItemsContainer = document.getElementById('actionItemsContainer');
+/* =========================================================
+   EXCEL EXPORT  (SheetJS)
+   ========================================================= */
+function exportToExcel(){
+  if(!G.lastWpResult){ alert('Please run Calculate & Analyse first.'); return; }
+  var wb=XLSX.utils.book_new();
+  var c=G.calc, w=G.lastWpResult, counts=w.counts;
+  var now=new Date().toLocaleString();
 
-            // Check each parameter
-            const checks = [
-                {
-                    param: 'PHYS_MEMSIZE',
-                    calculated: calculated.recommendedParameters['PHYS_MEMSIZE'],
-                    title: 'Physical Memory Size',
-                    impact: 'Not setting PHYS_MEMSIZE properly will prevent ZAMM from functioning. The system will not automatically adjust memory parameters based on physical memory.'
-                },
-                {
-                    param: 'em/initial_size_MB',
-                    calculated: calculated.recommendedParameters['em/initial_size_MB'],
-                    title: 'Extended Memory Initial Size',
-                    impact: 'If set too low, user contexts will not have enough memory, causing work process terminations. If too high, system may exhaust memory on startup.'
-                },
-                {
-                    param: 'EM/TOTAL_SIZE_MB',
-                    calculated: calculated.recommendedParameters['EM/TOTAL_SIZE_MB'],
-                    title: 'Total Extended Memory Size',
-                    impact: 'The total EM pool size limits the maximum memory available to all user contexts. Insufficient size leads to ROLL-OVER operations and performance degradation.'
-                }
-            ];
+  /* ── Sheet 1: System Overview ── */
+  var s1=[
+    ['SAP ZAMM Analysis Report'],
+    ['Generated', now],
+    [''],
+    ['SYSTEM CONFIGURATION'],
+    ['OS',              G.os.toUpperCase()],
+    ['Total RAM (GB)',  G.ramGB],
+    ['Other Instance (GB)', G.otherGB],
+    ['OS Reserve (GB)', G.osResGB],
+    ['PHYS_MEMSIZE (MB)', G.physMB],
+    [''],
+    ['WORK PROCESSES'],
+    ['Type','Count','Min Recommended','EM Consumer'],
+    ['DIA – Dialog',         counts.dia,  10, 'Yes'],
+    ['BTC – Background',     counts.btc,  2,  'Yes'],
+    ['UPD – Update V1',      counts.upd,  1,  'Yes (50%)'],
+    ['UPD2 – Update V2',     counts.upd2, 0,  'Yes (50%)'],
+    ['SPO – Spool',          counts.spo,  1,  'No'],
+    ['Total WPs',            w.totalWP,   '',  ''],
+    ['EM-consuming WPs',     w.emConsumers,'',''],
+    [''],
+    ['EM UTILISATION'],
+    ['Worst-case EM Demand (MB)', Math.round(w.worstCaseEM_MB)],
+    ['Worst-case EM Utilisation (%)', +w.worstPct.toFixed(1)],
+    ['Average EM Utilisation (%)', +w.avgPct.toFixed(1)],
+    ['Available EM (MB)', w.emInitMB],
+    ['Safe EM Ceiling 75% (MB)', Math.round(w.emInitMB*0.75)],
+    ['EM Headroom (MB)', Math.round(Math.max(0,w.emInitMB*0.75-w.worstCaseEM_MB))],
+    ['Max Recommended DIA+BTC', w.maxRecDiaBtc],
+    ['Additional DIA/BTC Possible', Math.max(0,w.addlDiaPossible)]
+  ];
+  var ws1=XLSX.utils.aoa_to_sheet(s1);
+  ws1['!cols']=[{wch:36},{wch:22},{wch:20},{wch:18}];
+  ws1['A1'].s={font:{bold:true,sz:14}};
+  XLSX.utils.book_append_sheet(wb,ws1,'System Overview');
 
-            checks.forEach(check => {
-                const current = profileParams[check.param];
-                const calcValue = typeof check.calculated === 'number' ? Math.floor(check.calculated) : check.calculated;
-                
-                actionHTML += `
-                    <div class="print-section" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 6px;">
-                        <h4 style="color: var(--sap-blue); margin-bottom: 10px;">${check.title}</h4>
-                        <p><strong>Parameter:</strong> ${check.param}</p>
-                        <p><strong>Calculated Value:</strong> ${calcValue}</p>
-                        <p><strong>Current Value:</strong> ${current || 'NOT SET'}</p>
-                        
-                        ${current && current !== calcValue ? `
-                            <div class="impact-box">
-                                <h5>Impact if Wrong:</h5>
-                                <p>${check.impact}</p>
-                            </div>
-                        ` : ''}
-                        
-                        <div class="action-notes">
-                            <label><strong>Action to Take:</strong></label>
-                            <textarea class="action-note-text" data-param="${check.param}"></textarea>
-                        </div>
-                    </div>
-                `;
-            });
+  /* ── Sheet 2: Calculated Parameters ── */
+  var s2=[
+    ['Parameter','Calculated Value','Description','SAP Note'],
+    ['PHYS_MEMSIZE',         fmtMB(G.physMB),                          'Effective physical memory',           '88416'],
+    ['em/initial_size_MB',   fmtMB(c['em/initial_size_MB']),           'Initial Extended Memory (70% of PHYS)','941735'],
+    ['em/max_size_MB',       fmtMB(c['em/max_size_MB']),               'Maximum EM growth boundary',          '2085980'],
+    ['em/blocksize_KB',      fmtKB(c['em/blocksize_KB']),              'EM allocation block size',            '941735'],
+    ['em/global_area_MB',    fmtMB(c['em/global_area_MB']),            'Global shared area (5% of EM)',       '88416'],
+    ['abap/buffersize',      fmtKB(c['abap/buffersize']),              'ABAP program buffer',                 '88416'],
+    ['abap/heaplimit',       c['abap/heaplimit']+' B (150 MB)',        'Per-WP heap limit',                   '88416'],
+    ['abap/heap_area_dia',   c['abap/heap_area_dia']+' B',            'Max heap per DIA WP',                 '88416'],
+    ['abap/heap_area_nondia',c['abap/heap_area_nondia']+' B',         'Max heap per non-DIA WP',             '88416'],
+    ['ztta/roll_extension',  c['ztta/roll_extension']+' B',           'Max EM per work process',             '88416'],
+    ['rdisp/PG_SHM',        c['rdisp/PG_SHM']+' pages',              'Shared paging area (×8 KB/page)',     '88416'],
+    ['rdisp/PG_MAXFS',      c['rdisp/PG_MAXFS']+' pages',            'Max paging file size',                '88416']
+  ];
+  var ws2=XLSX.utils.aoa_to_sheet(s2);
+  ws2['!cols']=[{wch:28},{wch:26},{wch:44},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws2,'ZAMM Parameters');
 
-            actionItemsContainer.innerHTML = actionHTML;
-        }
+  /* ── Sheet 3: WP Breakdown ── */
+  var s3=[['Type','Full Name','Parameter','Count','EM Consumer','EM Demand Worst (MB)','Min Recommended','Status']];
+  w.breakdown.forEach(function(row){
+    s3.push([
+      row.meta.label, row.meta.fullName, row.meta.param, row.count,
+      row.meta.usesEM?'Yes':'No', row.emMB||0, row.meta.minProd||0,
+      row.status.toUpperCase()
+    ]);
+  });
+  var ws3=XLSX.utils.aoa_to_sheet(s3);
+  ws3['!cols']=[{wch:8},{wch:20},{wch:22},{wch:8},{wch:14},{wch:22},{wch:18},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws3,'WP Breakdown');
 
-        function generateReport() {
-            const element = document.getElementById('reportCard');
-            const opt = {
-                margin: 10,
-                filename: 'SAP-ZAMM-Report.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-            };
-            html2pdf().set(opt).from(element).save();
-        }
+  /* ── Sheet 4: Parameter Impacts ── */
+  var s4=[['Parameter','Current Value','Suggested Value','Reason','Priority']];
+  if(w.paramImpacts.length>0){
+    w.paramImpacts.forEach(function(pi){
+      s4.push([pi.param, pi.current, pi.suggested, pi.reason, pi.severity.toUpperCase()]);
+    });
+  } else {
+    s4.push(['All parameters OK – no changes required','','','','']);
+  }
+  var ws4=XLSX.utils.aoa_to_sheet(s4);
+  ws4['!cols']=[{wch:28},{wch:24},{wch:28},{wch:60},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws4,'Parameter Impacts');
 
-        function copyToClipboard() {
-            if (!calculationState.results) return;
-            
-            let text = 'SAP ZAMM Calculated Parameters:\n\n';
-            for (const [param, value] of Object.entries(calculationState.results.recommendedParameters)) {
-                text += `${param} = ${value}\n`;
-            }
-            
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Parameters copied to clipboard!');
-            });
-        }
+  /* ── Sheet 5: Recommendations ── */
+  var s5=[['#','Severity','Title','Affected Parameter','Detail']];
+  if(w.suggestions.length>0){
+    w.suggestions.forEach(function(s,i){
+      s5.push([i+1, s.type.toUpperCase(), s.title.replace(/^[\u{1F534}\u{26A0}\u{2705}\u{2139}]+\s*/u,''),
+               s.param, stripTags(s.detail)]);
+    });
+  } else {
+    s5.push([1,'OK','Work Process Configuration Looks Good','–','No memory-related issues detected.']);
+  }
+  var ws5=XLSX.utils.aoa_to_sheet(s5);
+  ws5['!cols']=[{wch:4},{wch:10},{wch:40},{wch:36},{wch:90}];
+  XLSX.utils.book_append_sheet(wb,ws5,'Recommendations');
 
-        function resetForm() {
-            document.getElementById('osType').value = '';
-            document.getElementById('physMemory').value = '';
-            document.getElementById('kernelVersion').value = '';
-            document.getElementById('wpDia').value = '30';
-            document.getElementById('wpBtc').value = '20';
-            document.getElementById('wpSpo').value = '1';
-            document.getElementById('hasDatabase').checked = false;
-            document.getElementById('hasOtherApp').checked = false;
-            document.getElementById('dbMemoryGroup').style.display = 'none';
-            document.getElementById('otherAppMemoryGroup').style.display = 'none';
-            document.getElementById('profileFile').value = '';
-            document.getElementById('fileName').textContent = '';
-            document.getElementById('resultsCard').style.display = 'none';
-            document.getElementById('comparisonCard').style.display = 'none';
-            document.getElementById('reportCard').style.display = 'none';
-            calculationState = { ...calculationState, results: null };
-        }
-    </script>
+  /* ── Download ── */
+  var ts=new Date().toISOString().slice(0,19).replace(/:/g,'-');
+  XLSX.writeFile(wb,'SAP_ZAMM_Report_'+ts+'.xlsx');
+}
+
+/* =========================================================
+   CLEAR ALL
+   ========================================================= */
+function clearAll(){
+  ['inpRAM','inpOtherMem','inpOSReserve'].forEach(function(id){ getEl(id).value=id==='inpRAM'?'128':id==='inpOSReserve'?'2':'0'; });
+  getEl('selOS').value='linux';
+  getEl('selHasOther').value='no';
+  getEl('inpFiles').value='';
+  getEl('divFilePills').innerHTML='';
+  getEl('wpDIA').value='10'; getEl('wpBTC').value='3';
+  getEl('wpUPD').value='3';  getEl('wpUPD2').value='1'; getEl('wpSPO').value='1';
+  hide('wpSourceBadge');
+  ['cardCalc','cardWP','cardReport'].forEach(function(id){ hide(id); });
+  G={profileTexts:[],calc:{},wpData:{},physMB:0,os:'linux',ramGB:0,otherGB:0,osResGB:2,wpSource:'manual',lastWpResult:null};
+  toggleOther();
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+toggleOther();
+</script>
 </body>
 </html>
+
+							<script>
+                            	
+							</script>
+                        </body>
+                        </html>
+                    

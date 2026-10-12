@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "status": "never_run",
+  "generatedAt": null,
+  "staleAfterDays": 45,
+  "run": { "queries": 0, "tavilyCredits": 0, "cohereCalls": 0, "reranked": false, "summaries": 0, "errors": [] },
+  "sources": [],
+  "documentedDefaults": [],
+  "advisories": [],
+  "changes": [],
+  "changeLog": []
+}

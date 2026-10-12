@@ -1,0 +1,130 @@
+{
+  "_comment": "Edit queries / models / limits here. API keys NEVER go in this file - they come from environment variables (GitHub Secrets).",
+  "domains": [
+    "help.sap.com"
+  ],
+  "searchDepth": "basic",
+  "maxResultsPerQuery": 8,
+  "queries": [
+    "SAP zero administration memory management profile parameters PHYS_MEMSIZE",
+    "extended memory em/initial_size_MB em/max_size_MB ABAP application server",
+    "abap/heap_area_dia abap/heap_area_nondia abap/heap_area_total default value",
+    "ztta/roll_extension ztta/roll_area memory parameters default value",
+    "rdisp/PG_SHM rdisp/PG_MAXFS rdisp/ROLL_SHM rdisp/ROLL_MAXFS paging roll buffer",
+    "ABAP platform memory management work process memory limits kernel parameters"
+  ],
+  "rerankQuery": "SAP ABAP application server memory management profile parameters, zero administration memory management, extended memory, heap memory, roll and paging area, default values",
+  "trackedParams": [
+    "PHYS_MEMSIZE",
+    "em/initial_size_MB",
+    "em/max_size_MB",
+    "em/address_space_MB",
+    "em/blocksize_KB",
+    "em/global_area_MB",
+    "abap/buffersize",
+    "abap/heaplimit",
+    "abap/heap_area_dia",
+    "abap/heap_area_nondia",
+    "abap/heap_area_total",
+    "abap/shared_objects_size_MB",
+    "ztta/roll_extension",
+    "ztta/roll_area",
+    "ztta/roll_first",
+    "rdisp/PG_SHM",
+    "rdisp/PG_MAXFS",
+    "rdisp/ROLL_SHM",
+    "rdisp/ROLL_MAXFS",
+    "EM/TOTAL_SIZE_MB",
+    "rsdb/tbi_buffer_area_MB",
+    "VIRT_MEMSIZE"
+  ],
+  "minRelevance": 0.15,
+  "maxSources": 12,
+  "maxSummaries": 5,
+  "staleAfterDays": 45,
+  "limits": {
+    "maxTavilyCredits": 20,
+    "maxCohereCalls": 25,
+    "cohereMinGapMs": 7000
+  },
+  "models": {
+    "rerank": "rerank-v3.5",
+    "chat": "command-a-03-2025"
+  },
+  "seedExtractDepth": "advanced",
+  "minRowsPerSeed": 6,
+  "seeds": [
+    {
+      "id": "abap-platform",
+      "basis": "current",
+      "label": "SAP Memory Management (BC-CST-MM) – ABAP platform, current release",
+      "url": "https://help.sap.com/docs/ABAP_PLATFORM_NEW/f146e75588924fa4987b6c8f1a7a8c7e/49325d4ee93934ffe10000000a421937.html?locale=en-US",
+      "pdfUrl": "https://help.sap.com/http.svc/dynamicpdfcontentpreview?deliverable_id=41835781&mtType=NONE",
+      "file": "data/sources/abap-platform.pdf"
+    },
+    {
+      "id": "nw740",
+      "basis": "nw740",
+      "label": "SAP Memory Management (BC-CST-MM) – SAP NetWeaver 7.4",
+      "url": "https://help.sap.com/docs/SAP_NETWEAVER_740/f146e75588924fa4987b6c8f1a7a8c7e/49325d4ee93934ffe10000000a421937.html?locale=en-US",
+      "pdfUrl": "https://help.sap.com/http.svc/dynamicpdfcontentpreview?deliverable_id=34409175&mtType=NONE",
+      "file": "data/sources/nw740.pdf"
+    },
+    {
+      "id": "app-infra",
+      "basis": "none",
+      "minRows": 0,
+      "label": "Application Server Infrastructure – SAP Memory Management (expert content)",
+      "url": "https://help.sap.com/docs/SUPPORT_CONTENT/si?locale=en-US&state=PRODUCTION&version=1.0",
+      "pdfUrl": "https://help.sap.com/http.svc/dynamicpdfcontentpreview?deliverable_id=30230094&mtType=NONE",
+      "file": "data/sources/app-infra.pdf"
+    }
+  ],
+  "toolCheck": {
+    "grid": {
+      "ramGB": [
+        16,
+        64,
+        128,
+        512
+      ],
+      "os": [
+        "windows",
+        "linux",
+        "unix",
+        "aix"
+      ]
+    }
+  },
+  "knownDifferences": [
+    {
+      "param": "em/max_size_MB",
+      "basis": "nw740",
+      "os": [
+        "windows"
+      ],
+      "reason": "NW 7.4 SPS31 Windows table says em/max_size_MB = em/initial_size_MB; Note 88416 (Windows, v45 2024) and ABAP Platform say 1.5*PHYS_MEMSIZE. Calculator follows 88416. Verify with RSPARAM on a 7.4x Windows system."
+    },
+    {
+      "param": "abap/heap_area_nondia",
+      "basis": "nw740",
+      "os": [
+        "windows"
+      ],
+      "reason": "NW 7.4 SPS31 Windows table says 2000000000; Note 88416 and ABAP Platform say 0 on Windows. Calculator follows 88416."
+    },
+    {
+      "param": "abap/heap_area_total",
+      "basis": "nw740",
+      "os": [
+        "windows"
+      ],
+      "reason": "NW 7.4 SPS31 Windows table says max(PM*1024*1024*0.1, 2*heap_area_dia); Note 88416 says PM*1024*1024 on Windows. Calculator follows 88416."
+    },
+    {
+      "param": "rdisp/PG_MAXFS",
+      "basis": "current",
+      "reason": "Help (ABAP platform 2025) and Note 2085980 say rdisp/PG_MAXFS = rdisp/PG_SHM. RSPARAM of four real systems (Linux/Windows, ECC/S4) shows a fixed 256000 - on Linux ECC PG_SHM is 253600 while PG_MAXFS is 256000. Calculator follows the systems."
+    }
+  ]
+}

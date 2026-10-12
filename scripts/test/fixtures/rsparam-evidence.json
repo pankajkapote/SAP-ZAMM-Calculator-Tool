@@ -1,0 +1,650 @@
+{
+ "_comment": "Anonymized memory-parameter excerpt of RSPARAM exports from four real SAP systems (no SIDs, hosts or paths). \"def\" = System Default Value, \"formula\" = unsubstituted default, \"userSet\" = a user-defined value exists, \"truncated\" = formula cell cut off by the export (ECC exports cut at ~70 chars), \"evidence\" = the row says something about KERNEL defaults: the user value is empty or different, or the default is a formula whose inputs are themselves evidence. A literal default that merely echoes an admin-set value is NOT evidence.",
+ "systems": {
+  "Linux_ECC": {
+   "os": "linux",
+   "basis": "current",
+   "rows": {
+    "PHYS_MEMSIZE": {
+     "def": "126428",
+     "userSet": true,
+     "formula": "126428",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/initial_size_MB": {
+     "def": "88500",
+     "userSet": true,
+     "formula": "($(PHYS_MEMSIZE) * 0.7)",
+     "truncated": false,
+     "evidence": true
+    },
+    "EM/TOTAL_SIZE_MB": {
+     "def": "88500",
+     "userSet": true,
+     "formula": "($(em/initial_size_MB))",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/max_size_MB": {
+     "def": "88500",
+     "userSet": true,
+     "formula": "($(em/initial_size_MB))",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/blocksize_KB": {
+     "def": "4096",
+     "userSet": true,
+     "formula": "(ceil($(em/initial_size_MB) * 1024 / 100000 / 4096) * 4096)",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/global_area_MB": {
+     "def": "4425",
+     "userSet": true,
+     "formula": "(min($(em/initial_size_MB) * 0.05, 32000))",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/shared_objects_size_MB": {
+     "def": "1770",
+     "userSet": true,
+     "formula": "(min(20000, $(em/initial_size_MB)*0.02))",
+     "truncated": false,
+     "evidence": true
+    },
+    "rsdb/tbi_buffer_area_MB": {
+     "def": "3117",
+     "userSet": true,
+     "formula": "( ( ( ($(rtbb/buffer_length) * 1024 + $(zcsa/table_buffer_ar",
+     "truncated": true,
+     "evidence": true
+    },
+    "rtbb/buffer_length": {
+     "def": "263672",
+     "userSet": true,
+     "formula": "($(zcsa/table_buffer_area) * 0.1 / 1024)",
+     "truncated": false,
+     "evidence": true
+    },
+    "zcsa/table_buffer_area": {
+     "def": "2700000000",
+     "userSet": true,
+     "formula": "(min(2700000000, (max(30000000,($(em/initial_size_MB) * 1024",
+     "truncated": true,
+     "evidence": true
+    },
+    "zcsa/db_max_buftab": {
+     "def": "878906",
+     "userSet": true,
+     "formula": "(max(20000,$(zcsa/table_buffer_area) / (3 * 1024) ))",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/buffersize": {
+     "def": "11651225",
+     "userSet": true,
+     "formula": "(min(ceil($(em/initial_size_MB)*1024*0.2/4096)*4096, ceil(sq",
+     "truncated": true,
+     "evidence": true
+    },
+    "abap/programs": {
+     "def": "2912806",
+     "userSet": true,
+     "formula": "($(abap/buffersize)/4)",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heaplimit": {
+     "def": "150000000",
+     "userSet": true,
+     "formula": "150000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_dia": {
+     "def": "2000000000",
+     "userSet": true,
+     "formula": "2000000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_nondia": {
+     "def": "2000000000",
+     "userSet": true,
+     "formula": "2000000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_total": {
+     "def": "13256936653",
+     "userSet": true,
+     "formula": "(max($(PHYS_MEMSIZE)*1024*1024 * 0.1,  $(abap/heap_area_dia)",
+     "truncated": true,
+     "evidence": true
+    },
+    "rdisp/PG_SHM": {
+     "def": "253600",
+     "userSet": true,
+     "formula": "(min(1000+40*max(5,floor(($(PHYS_MEMSIZE)-128)/20)),256000))",
+     "truncated": false,
+     "evidence": true
+    },
+    "rdisp/PG_MAXFS": {
+     "def": "256000",
+     "userSet": true,
+     "formula": "256000",
+     "truncated": false,
+     "evidence": true
+    },
+    "ztta/roll_extension": {
+     "def": "4000000000",
+     "userSet": true,
+     "formula": "4000000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "ztta/roll_extension_dia": {
+     "def": "4000000000",
+     "userSet": true,
+     "formula": "$(ztta/roll_extension)",
+     "truncated": false,
+     "evidence": true
+    },
+    "ztta/roll_extension_nondia": {
+     "def": "4000000000",
+     "userSet": true,
+     "formula": "$(ztta/roll_extension)",
+     "truncated": false,
+     "evidence": true
+    }
+   },
+   "kernel": "7.54"
+  },
+  "Win_ECC": {
+   "os": "windows",
+   "basis": "current",
+   "rows": {
+    "PHYS_MEMSIZE": {
+     "def": "262138",
+     "userSet": false,
+     "formula": "262138",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/initial_size_MB": {
+     "def": "183497",
+     "userSet": true,
+     "formula": "($(PHYS_MEMSIZE) * 0.7)",
+     "truncated": false,
+     "evidence": true
+    },
+    "EM/TOTAL_SIZE_MB": {
+     "def": "183497",
+     "userSet": true,
+     "formula": "($(em/initial_size_MB))",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/max_size_MB": {
+     "def": "393207",
+     "userSet": true,
+     "formula": "($(PHYS_MEMSIZE) * 1.5)",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/blocksize_KB": {
+     "def": "4096",
+     "userSet": true,
+     "formula": "(ceil($(em/initial_size_MB) * 1024 / 100000 / 4096) * 4096)",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/global_area_MB": {
+     "def": "9175",
+     "userSet": true,
+     "formula": "(min($(em/initial_size_MB) * 0.05, 32000))",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/shared_objects_size_MB": {
+     "def": "3670",
+     "userSet": true,
+     "formula": "(min(20000, $(em/initial_size_MB)*0.02))",
+     "truncated": false,
+     "evidence": true
+    },
+    "rsdb/tbi_buffer_area_MB": {
+     "def": "3117",
+     "userSet": true,
+     "formula": "( ( ( ($(rtbb/buffer_length) * 1024 + $(zcsa/table_buffer_ar",
+     "truncated": true,
+     "evidence": true
+    },
+    "rtbb/buffer_length": {
+     "def": "263672",
+     "userSet": true,
+     "formula": "($(zcsa/table_buffer_area) * 0.1 / 1024)",
+     "truncated": false,
+     "evidence": true
+    },
+    "zcsa/table_buffer_area": {
+     "def": "2700000000",
+     "userSet": true,
+     "formula": "(min(2700000000, (max(30000000,($(em/initial_size_MB) * 1024",
+     "truncated": true,
+     "evidence": true
+    },
+    "zcsa/db_max_buftab": {
+     "def": "878906",
+     "userSet": true,
+     "formula": "(max(20000,$(zcsa/table_buffer_area) / (3 * 1024) ))",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/buffersize": {
+     "def": "16777024",
+     "userSet": true,
+     "formula": "(min(ceil($(em/initial_size_MB)*1024*0.2/4096)*4096, ceil(sq",
+     "truncated": true,
+     "evidence": true
+    },
+    "abap/programs": {
+     "def": "4194256",
+     "userSet": true,
+     "formula": "($(abap/buffersize)/4)",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heaplimit": {
+     "def": "150000000",
+     "userSet": false,
+     "formula": "150000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_dia": {
+     "def": "2000000000",
+     "userSet": false,
+     "formula": "2000000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_nondia": {
+     "def": "0",
+     "userSet": false,
+     "formula": "0",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_total": {
+     "def": "274871615488",
+     "userSet": true,
+     "formula": "($(PHYS_MEMSIZE) * 1024 * 1024)",
+     "truncated": false,
+     "evidence": true
+    },
+    "rdisp/PG_SHM": {
+     "def": "256000",
+     "userSet": true,
+     "formula": "(min(1000+40*max(5,floor(($(PHYS_MEMSIZE)-128)/20)),256000))",
+     "truncated": false,
+     "evidence": true
+    },
+    "rdisp/PG_MAXFS": {
+     "def": "256000",
+     "userSet": true,
+     "formula": "256000",
+     "truncated": false,
+     "evidence": true
+    },
+    "ztta/roll_extension": {
+     "def": "2000000000",
+     "userSet": false,
+     "formula": "2000000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "ztta/roll_extension_dia": {
+     "def": "2000000000",
+     "userSet": true,
+     "formula": "$(ztta/roll_extension)",
+     "truncated": false,
+     "evidence": true
+    },
+    "ztta/roll_extension_nondia": {
+     "def": "2000000000",
+     "userSet": true,
+     "formula": "$(ztta/roll_extension)",
+     "truncated": false,
+     "evidence": true
+    }
+   },
+   "kernel": "7.54"
+  },
+  "Linux_S4": {
+   "os": "linux",
+   "basis": "s4",
+   "rows": {
+    "PHYS_MEMSIZE": {
+     "def": "126143",
+     "userSet": true,
+     "formula": "126143",
+     "truncated": false,
+     "evidence": true
+    },
+    "VIRT_MEMSIZE": {
+     "def": "100914",
+     "userSet": true,
+     "formula": "($(em/initial_size_MB))",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/initial_size_MB": {
+     "def": "100914",
+     "userSet": true,
+     "formula": "($(PHYS_MEMSIZE) * 0.8)",
+     "truncated": false,
+     "evidence": true
+    },
+    "EM/TOTAL_SIZE_MB": {
+     "def": "100914",
+     "userSet": true,
+     "formula": "($(em/initial_size_MB))",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/max_size_MB": {
+     "def": "100914",
+     "userSet": true,
+     "formula": "($(VIRT_MEMSIZE))",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/global_area_MB": {
+     "def": "5046",
+     "userSet": true,
+     "formula": "(min($(em/initial_size_MB) * 0.05, 32000))",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/shared_objects_size_MB": {
+     "def": "2018",
+     "userSet": true,
+     "formula": "(max(800,$(em/initial_size_MB)*0.02))",
+     "truncated": false,
+     "evidence": true
+    },
+    "rsdb/tbi_buffer_area_MB": {
+     "def": "4000",
+     "userSet": true,
+     "formula": "4000",
+     "truncated": false,
+     "evidence": false
+    },
+    "rtbb/buffer_length": {
+     "def": "263672",
+     "userSet": true,
+     "formula": "($(zcsa/table_buffer_area) * 0.1 / 1024)",
+     "truncated": false,
+     "evidence": true
+    },
+    "zcsa/table_buffer_area": {
+     "def": "2700000000",
+     "userSet": true,
+     "formula": "(min(2700000000, (max(30000000,($(em/initial_size_MB) * 1024 * 1024 * 0.08)))))",
+     "truncated": false,
+     "evidence": true
+    },
+    "zcsa/db_max_buftab": {
+     "def": "878906",
+     "userSet": true,
+     "formula": "(max(20000,$(zcsa/table_buffer_area) / (3 * 1024) ))",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/buffersize": {
+     "def": "7000000",
+     "userSet": true,
+     "formula": "7000000",
+     "truncated": false,
+     "evidence": false
+    },
+    "abap/programs": {
+     "def": "1750000",
+     "userSet": true,
+     "formula": "($(abap/buffersize)/4)",
+     "truncated": false,
+     "evidence": false
+    },
+    "abap/heaplimit": {
+     "def": "150000000",
+     "userSet": false,
+     "formula": "150000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_dia": {
+     "def": "2000000000",
+     "userSet": false,
+     "formula": "2000000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_nondia": {
+     "def": "2000000000",
+     "userSet": false,
+     "formula": "2000000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_total": {
+     "def": "13227052237",
+     "userSet": true,
+     "formula": "(max($(PHYS_MEMSIZE)*1024*1024 * 0.1,  $(abap/heap_area_dia) * 2 ))",
+     "truncated": false,
+     "evidence": true
+    },
+    "rdisp/PG_SHM": {
+     "def": "131072",
+     "userSet": true,
+     "formula": "131072",
+     "truncated": false,
+     "evidence": false
+    },
+    "rdisp/PG_MAXFS": {
+     "def": "256000",
+     "userSet": false,
+     "formula": "256000",
+     "truncated": false,
+     "evidence": true
+    },
+    "ztta/roll_extension": {
+     "def": "12000000000",
+     "userSet": true,
+     "formula": "12000000000",
+     "truncated": false,
+     "evidence": false
+    },
+    "ztta/roll_extension_dia": {
+     "def": "12000000000",
+     "userSet": true,
+     "formula": "$(ztta/roll_extension)",
+     "truncated": false,
+     "evidence": false
+    },
+    "ztta/roll_extension_nondia": {
+     "def": "12000000000",
+     "userSet": true,
+     "formula": "$(ztta/roll_extension)",
+     "truncated": false,
+     "evidence": false
+    }
+   },
+   "kernel": "7.93"
+  },
+  "Win_S4": {
+   "os": "windows",
+   "basis": "s4",
+   "rows": {
+    "PHYS_MEMSIZE": {
+     "def": "131066",
+     "userSet": false,
+     "formula": "131066",
+     "truncated": false,
+     "evidence": true
+    },
+    "VIRT_MEMSIZE": {
+     "def": "196599",
+     "userSet": true,
+     "formula": "($(PHYS_MEMSIZE) * 1.5)",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/initial_size_MB": {
+     "def": "104853",
+     "userSet": true,
+     "formula": "($(PHYS_MEMSIZE) * 0.8)",
+     "truncated": false,
+     "evidence": true
+    },
+    "EM/TOTAL_SIZE_MB": {
+     "def": "104853",
+     "userSet": true,
+     "formula": "($(em/initial_size_MB))",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/max_size_MB": {
+     "def": "196599",
+     "userSet": true,
+     "formula": "($(VIRT_MEMSIZE))",
+     "truncated": false,
+     "evidence": true
+    },
+    "em/global_area_MB": {
+     "def": "5243",
+     "userSet": true,
+     "formula": "(min($(em/initial_size_MB) * 0.05, 32000))",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/shared_objects_size_MB": {
+     "def": "2097",
+     "userSet": true,
+     "formula": "(min(20000, $(em/initial_size_MB)*0.02))",
+     "truncated": false,
+     "evidence": true
+    },
+    "rsdb/tbi_buffer_area_MB": {
+     "def": "3117",
+     "userSet": true,
+     "formula": "( ( ( ($(rtbb/buffer_length) * 1024 + $(zcsa/table_buffer_area)) * 1.1 ) / (1024 * 1024) ) + 1)",
+     "truncated": false,
+     "evidence": true
+    },
+    "rtbb/buffer_length": {
+     "def": "263672",
+     "userSet": true,
+     "formula": "($(zcsa/table_buffer_area) * 0.1 / 1024)",
+     "truncated": false,
+     "evidence": true
+    },
+    "zcsa/table_buffer_area": {
+     "def": "2700000000",
+     "userSet": true,
+     "formula": "(min(2700000000, (max(30000000,($(em/initial_size_MB) * 1024 * 1024 * 0.08)))))",
+     "truncated": false,
+     "evidence": true
+    },
+    "zcsa/db_max_buftab": {
+     "def": "878906",
+     "userSet": true,
+     "formula": "(max(20000,$(zcsa/table_buffer_area) / (3 * 1024) ))",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/buffersize": {
+     "def": "11863012",
+     "userSet": true,
+     "formula": "(min(ceil($(em/initial_size_MB)*1024*0.2/4096)*4096, ceil(sqrt($(PHYS_MEMSIZE)/1024)*1024*1024)))",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/programs": {
+     "def": "2965753",
+     "userSet": true,
+     "formula": "($(abap/buffersize)/4)",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heaplimit": {
+     "def": "150000000",
+     "userSet": false,
+     "formula": "150000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_dia": {
+     "def": "2000000000",
+     "userSet": false,
+     "formula": "2000000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_nondia": {
+     "def": "0",
+     "userSet": false,
+     "formula": "0",
+     "truncated": false,
+     "evidence": true
+    },
+    "abap/heap_area_total": {
+     "def": "137432662016",
+     "userSet": true,
+     "formula": "($(PHYS_MEMSIZE) * 1024 * 1024)",
+     "truncated": false,
+     "evidence": true
+    },
+    "rdisp/PG_SHM": {
+     "def": "256000",
+     "userSet": true,
+     "formula": "(min(1000+40*max(5,floor(($(PHYS_MEMSIZE)-128)/20)),256000))",
+     "truncated": false,
+     "evidence": true
+    },
+    "rdisp/PG_MAXFS": {
+     "def": "256000",
+     "userSet": false,
+     "formula": "256000",
+     "truncated": false,
+     "evidence": true
+    },
+    "ztta/roll_extension": {
+     "def": "2000000000",
+     "userSet": false,
+     "formula": "2000000000",
+     "truncated": false,
+     "evidence": true
+    },
+    "ztta/roll_extension_dia": {
+     "def": "2000000000",
+     "userSet": true,
+     "formula": "$(ztta/roll_extension)",
+     "truncated": false,
+     "evidence": true
+    },
+    "ztta/roll_extension_nondia": {
+     "def": "2000000000",
+     "userSet": true,
+     "formula": "$(ztta/roll_extension)",
+     "truncated": false,
+     "evidence": true
+    }
+   },
+   "kernel": "7.93"
+  }
+ },
+ "_kernels": "SAP kernel per system as stated by the system owner (not part of RSPARAM): ECC 7.54, S/4HANA 7.93."
+}

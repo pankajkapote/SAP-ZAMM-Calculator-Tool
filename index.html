@@ -106,6 +106,12 @@ code{font-family:'Courier New',monospace;font-size:12px;background:#f1f5f9;paddi
 .manual-wp-section{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin-top:14px;}
 .manual-wp-section h4{font-size:13px;font-weight:700;color:#003d7a;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .profile-source-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#e8f1fb;color:#0a6ed1;border:1px solid #93c5fd;}
+.live-status{font-size:11px;margin-top:4px;opacity:.9;}
+.live-status.stale{color:#ffd9a8;font-weight:700;opacity:1;}
+.live-note{font-size:12px;color:#374151;line-height:1.6;margin:8px 0;}
+.live-src{font-size:12px;padding:6px 0;border-bottom:1px solid #f3f4f6;}
+.live-src a,.suggestion-card a{color:#0a6ed1;}
+details.live-details summary{cursor:pointer;font-weight:700;color:#003d7a;font-size:13px;margin:12px 0 6px;}
 @media(max-width:600px){header{flex-direction:column;}.btn-row{flex-direction:column;}}
 @media print{header,.btn-row,button,.manual-wp-section,.grid,.card-title .step-badge{display:none!important;}
   .card{box-shadow:none;page-break-inside:avoid;border:1px solid #ccc;}body{background:#fff;font-size:12px;}
@@ -126,6 +132,7 @@ code{font-family:'Courier New',monospace;font-size:12px;background:#f1f5f9;paddi
       <a href="https://me.sap.com/notes/1518419" target="_blank" style="color:#aecfef">1518419</a> ·
       <a href="https://me.sap.com/notes/3681846" target="_blank" style="color:#aecfef">3681846</a>
     </p>
+    <p id="liveStatus" class="live-status"></p>
   </div>
 </header>
 
@@ -142,6 +149,14 @@ code{font-family:'Courier New',monospace;font-size:12px;background:#f1f5f9;paddi
         <option value="linux" selected>Linux 64-bit</option>
         <option value="unix">UNIX / HP-UX / Solaris</option>
         <option value="aix">IBM AIX</option>
+      </select>
+    </div>
+    <div>
+      <label>SAP Release Basis <span class="hint">(defaults differ by release)</span></label>
+      <select id="selRel">
+        <option value="current" selected>ECC – SAP kernel 7.54 (verified on live ECC systems)</option>
+        <option value="s4">S/4HANA – SAP kernel 7.93 (verified on a live system: 0.8 × PM, VIRT_MEMSIZE)</option>
+        <option value="nw740">NW 7.4 / kernel 7.40–7.4x – Notes + Help only (no live system)</option>
       </select>
     </div>
     <div>
@@ -162,7 +177,7 @@ code{font-family:'Courier New',monospace;font-size:12px;background:#f1f5f9;paddi
     <div>
       <label>OS Reserve (GB)</label>
       <input type="number" id="inpOSReserve" value="2" min="0" step="1">
-      <div class="hint">Recommended ≥ 2 GB for OS [Note 941735]</div>
+      <div class="hint">Windows: keep ≥ ~2 GB free for OS &amp; 3rd-party software [Note 1518419]</div>
     </div>
   </div>
 
@@ -185,7 +200,7 @@ code{font-family:'Courier New',monospace;font-size:12px;background:#f1f5f9;paddi
       <div>
         <label>DIA – Dialog</label>
         <input type="number" id="wpDIA" value="10" min="0" max="999" step="1">
-        <div class="hint">Min 10 for productive [Note 88416]</div>
+        <div class="hint">Tool guideline: ≥ 10 for productive systems</div>
       </div>
       <div>
         <label>BTC – Background</label>
@@ -224,6 +239,12 @@ code{font-family:'Courier New',monospace;font-size:12px;background:#f1f5f9;paddi
   <div class="tbl-wrap"><table id="tblCalc"></table></div>
 </div>
 
+<!-- SECTION 2b – LIVE SAP HELP CROSS-CHECK -->
+<div class="card hidden" id="cardLive">
+  <div class="card-title"><span class="step-badge">&#8635;</span> Live SAP Help Cross-check <span class="badge badge-info" style="margin-left:6px;">auto-refreshed</span></div>
+  <div id="divLive"></div>
+</div>
+
 <!-- SECTION 3 – WORK PROCESS ANALYSIS -->
 <div class="card hidden" id="cardWP">
   <div class="card-title"><span class="step-badge">3</span> Work Process Analysis &amp; Memory Impact</div>
@@ -250,6 +271,7 @@ code{font-family:'Courier New',monospace;font-size:12px;background:#f1f5f9;paddi
    GLOBAL STATE
    ========================================================= */
 var G = {
+  rel          : 'current',
   profileTexts : [],
   calc         : {},
   wpData       : {},
@@ -304,9 +326,10 @@ var WP_META = {
 function getEl(id)  { return document.getElementById(id); }
 function show(id)   { getEl(id).classList.remove('hidden'); }
 function hide(id)   { getEl(id).classList.add('hidden'); }
-function fmtMB(v)   { return Number(v||0).toLocaleString()+' MB'; }
-function fmtNum(v)  { return Number(v||0).toLocaleString(); }
-function fmtKB(v)   { return Number(v||0).toLocaleString()+' KB'; }
+function fmtMB(v)   { return v==null?'n/a':Number(v||0).toLocaleString()+' MB'; }
+function fmtNum(v)  { return v==null?'n/a':Number(v||0).toLocaleString(); }
+function fmtKB(v)   { return v==null?'n/a':Number(v||0).toLocaleString()+' KB'; }
+function relLabel(r){ return r==='nw740'?'NW 7.4 / kernel 7.40–7.4x (docs only)':(r==='s4'?'S/4HANA / kernel 7.93':'ECC / kernel 7.54'); }
 function stripTags(s){ return (s||'').replace(/<[^>]+>/g,''); }
 
 function noteLink(id){
@@ -381,32 +404,52 @@ function populateWPFromProfile(){
 /* =========================================================
    ZAMM CALCULATION
    ========================================================= */
-function calcZAMM(physMB,os){
+/* <zamm-calc> */
+/* Release bases (see NOTE-VERIFICATION.md for the evidence behind every line):
+     'current' - ECC, SAP kernel 7.54 (kernel stated by the system owner): Note 2085980 + SAP Help "ABAP platform 2025", verified against RSPARAM of a Linux and a Windows ECC system
+     's4'      - S/4HANA, SAP kernel 7.93: as 'current' except em/initial = 0.8*PM (uncapped), em/max = VIRT_MEMSIZE, no em/blocksize_KB;
+                 verified against RSPARAM of a Linux and a Windows S/4HANA system. The SAP Help documents do NOT describe these defaults.
+     'nw740'   - NW 7.4 / kernel 7.40-7.4x: Note 88416 + SAP Help "NW 7.4 SPS31" (no live system available)
+   The kernel rounds derived integer parameters to the NEAREST integer (e.g. 126428 * 0.7 = 88499.6 -> 88500). */
+function calcZAMM(physMB,os,rel){
+  var legacy=(rel==='nw740'), s4=(rel==='s4'), R=Math.round;
   var c={}, PM=physMB;
   c['PHYS_MEMSIZE']=PM;
-  c['em/initial_size_MB']= os==='aix' ? Math.floor(PM*0.7) : Math.min(512000,Math.floor(PM*0.7));
+  var em0=R(PM*(s4?0.8:0.7));
+  c['em/initial_size_MB']=(os==='aix'||s4) ? em0 : Math.min(512000,em0);
   c['EM/TOTAL_SIZE_MB']=c['em/initial_size_MB'];
-  c['em/max_size_MB']= os==='windows' ? Math.min(32000,Math.floor(PM*1.5)) : c['em/initial_size_MB'];
-  var blk=Math.ceil(c['em/initial_size_MB']*1024/100000/4096)*4096;
-  c['em/blocksize_KB']=Math.max(4096,blk);
-  c['em/global_area_MB']=Math.min(Math.floor(c['em/initial_size_MB']*0.05),32000);
-  var bufA=Math.ceil(c['em/initial_size_MB']*1024*0.3/4096)*4096;
-  var bufB=Math.ceil(Math.sqrt(PM/1024)*1024*1024);
-  c['abap/buffersize']=Math.min(bufA,bufB);
+  c['em/max_size_MB']= os==='windows' ? ((legacy||s4) ? R(PM*1.5) : Math.min(512000,R(PM*1.5))) : c['em/initial_size_MB'];   /* s4: = VIRT_MEMSIZE */
+  if(!s4){ var blk=Math.ceil(c['em/initial_size_MB']*1024/100000/4096)*4096; c['em/blocksize_KB']=Math.max(4096,blk); }   /* parameter does not exist on S/4 kernels */
+  c['em/global_area_MB']=R(Math.min(c['em/initial_size_MB']*0.05,32000));
+  c['abap/shared_objects_size_MB']=R(Math.min((os==='aix'&&!legacy)?4000:20000,c['em/initial_size_MB']*0.02));
+  if(!legacy){                                                  /* table-buffer area inside EM; formula taken from RSPARAM (ECC factor 0.1, S/4 factor 0.08) */
+    var tba=Math.min(2700000000,Math.max(30000000,c['em/initial_size_MB']*1024*1024*(s4?0.08:0.1)));
+    c['rsdb/tbi_buffer_area_MB']=R((R(tba*0.1/1024)*1024+tba)*1.1/(1024*1024)+1);
+  }
+  if(legacy){
+    c['abap/buffersize']=Math.ceil(c['em/initial_size_MB']*1024*0.15/4096)*4096;                       /* 0.15, no sqrt cap */
+  } else {
+    var bufA=Math.ceil(c['em/initial_size_MB']*1024*0.2/4096)*4096;
+    var bufB=Math.ceil(Math.sqrt(PM/1024)*1024*1024);
+    c['abap/buffersize']=Math.min(bufA,bufB);
+  }
   c['abap/programs']=Math.floor(c['abap/buffersize']/4);
   c['abap/heaplimit']=150000000;
   c['abap/heap_area_dia']=2000000000;
   c['abap/heap_area_nondia']= os==='windows' ? 0 : 2000000000;
-  c['abap/heap_area_total']= os==='windows' ? PM*1024*1024 : Math.max(PM*1024*1024*0.1,4000000000);
-  var pgshm=Math.min(1000+40*Math.max(5,Math.floor((PM-128)/20)),96000);
-  c['rdisp/PG_SHM']=Math.max(1000,pgshm);
-  c['rdisp/PG_MAXFS']=c['rdisp/PG_SHM'];
-  c['ztta/roll_extension']=Math.min(Math.floor(c['em/initial_size_MB']*1024*1024*0.5),2000000000);
-  c['ztta/roll_area']=65536;
-  c['rdisp/roll_SHM']=100;
-  c['rdisp/roll_MAXFS']=16000;
+  c['abap/heap_area_total']= os==='windows' ? PM*1024*1024 : R(Math.max(PM*1024*1024*0.1,4000000000));
+  if(legacy){
+    c['rdisp/PG_SHM']=Math.max(Math.min(1000+40*Math.max(5,Math.floor((PM-128)*25/128)),16384),1024);
+    c['rdisp/PG_MAXFS']=32768;
+  } else {
+    c['rdisp/PG_SHM']=Math.min(1000+40*Math.max(5,Math.floor((PM-128)/20)),256000);
+    c['rdisp/PG_MAXFS']=256000;                                 /* fixed on all four RSPARAM systems (docs say "= PG_SHM") */
+  }
+  c['ztta/roll_extension']=(!legacy && os==='linux') ? 4000000000 : 2000000000;   /* ABAP Platform 2025 + Linux ECC system: Linux 4 GB; UNIX/Windows/AIX 2 GB */
+  /* ztta/roll_area, ztta/roll_first, rdisp/ROLL_MAXFS, rdisp/ROLL_SHM are obsolete as of kernel 7.40 (Note 2085980) - intentionally not calculated */
   return c;
 }
+/* </zamm-calc> */
 
 /* =========================================================
    GATHER WP COUNTS – always reads live from inputs
@@ -426,8 +469,10 @@ function gatherWPCounts(){
    WORK PROCESS ANALYSIS
    ========================================================= */
 function analyseWorkProcesses(counts,calc,physMB){
-  var emInitMB=calc['em/initial_size_MB'];
-  var emInitB=emInitMB*1024*1024;
+  var emInitMB=calc['em/initial_size_MB'];                                                    /* total EM */
+  var emOverheadMB=(calc['em/global_area_MB']||0)+(calc['abap/shared_objects_size_MB']||0)+(calc['rsdb/tbi_buffer_area_MB']||0);   /* EG areas user contexts cannot use [941735] */
+  var emUsableMB=Math.max(0,emInitMB-emOverheadMB);
+  var emInitB=emUsableMB*1024*1024;                                                           /* all % below are of USABLE EM */
   var rollExt=calc['ztta/roll_extension'];
   var pgSHM=calc['rdisp/PG_SHM'];
   var totalWP=counts.dia+counts.btc+counts.upd+counts.upd2+counts.spo;
@@ -460,10 +505,10 @@ function analyseWorkProcesses(counts,calc,physMB){
       param:'em/initial_size_MB / rdisp/wp_no_dia + rdisp/wp_no_btc',
       title:'🔴 CRITICAL – EM Overcommit Detected',
       detail:'Worst-case EM demand ('+(worstCaseEM_B/1024/1024).toFixed(0)+' MB = '+worstPct.toFixed(1)+
-             '% of em/initial_size_MB) exceeds available Extended Memory. Risk: heavy paging / system slowdown. '+
+             '% of usable EM = em/initial_size_MB minus global-area and shared-objects areas) exceeds available Extended Memory. Risk: heavy paging / system slowdown. '+
              'Recommended: (a) Increase PHYS_MEMSIZE and em/initial_size_MB, OR '+
              '(b) Reduce DIA to ≤ '+Math.max(1,Math.floor(maxRecDiaBtc*0.6))+
-             ' and BTC to ≤ '+Math.max(1,Math.floor(maxRecDiaBtc*0.4))+'. ['+noteLink('88416')+']'
+             ' and BTC to ≤ '+Math.max(1,Math.floor(maxRecDiaBtc*0.4))+'. [tool guideline]'
     });
   } else if(worstPct>80){
     suggestions.push({type:'warn',
@@ -471,33 +516,33 @@ function analyseWorkProcesses(counts,calc,physMB){
       title:'⚠️ High EM Pressure (> 80%)',
       detail:'Worst-case EM demand is '+worstPct.toFixed(1)+'% of available Extended Memory. '+
              'Above the recommended 75% ceiling. Monitor ST02 regularly. '+
-             'Consider increasing em/initial_size_MB or reducing work process count. ['+noteLink('941735')+']'
+             'Consider increasing em/initial_size_MB or reducing work process count. ['+noteLink('941735')+' for usable EM; thresholds are tool guidelines]'
     });
   } else if(worstPct>60){
     suggestions.push({type:'warn',
       param:'em/initial_size_MB',
       title:'⚠️ Moderate EM Pressure (60–80%)',
       detail:'Worst-case EM demand is '+worstPct.toFixed(1)+'% of available EM. Within safe limits '+
-             'for most workloads. Review ST02 during peak load. ['+noteLink('941735')+']'
+             'for most workloads. Review ST02 during peak load. ['+noteLink('941735')+' for usable EM; thresholds are tool guidelines]'
     });
   }
 
   if(counts.dia>0&&counts.dia<10)
     suggestions.push({type:'warn',param:'rdisp/wp_no_dia',title:'⚠️ Low DIA Count (< 10)',
-      detail:'Only '+counts.dia+' Dialog processes. Minimum 10 recommended for productive systems. ['+noteLink('88416')+']'});
+      detail:'Only '+counts.dia+' Dialog processes. Minimum 10 recommended for productive systems. [tool guideline]'});
   if(counts.btc<2)
     suggestions.push({type:'warn',param:'rdisp/wp_no_btc',title:'⚠️ Low BTC Count (< 2)',
-      detail:'Only '+counts.btc+' Background process(es). Minimum 2 recommended. ['+noteLink('88416')+']'});
+      detail:'Only '+counts.btc+' Background process(es). Minimum 2 recommended. [tool guideline]'});
   if(counts.upd===0)
     suggestions.push({type:'warn',param:'rdisp/wp_no_vb',title:'⚠️ No UPD (V1 Update) Process',
-      detail:'No V1 Update processes found. At least 1 required if this instance handles DB updates. ['+noteLink('88416')+']'});
+      detail:'No V1 Update processes found. At least 1 required if this instance handles DB updates. [tool guideline]'});
   if(counts.spo===0)
     suggestions.push({type:'warn',param:'rdisp/wp_no_spo',title:'⚠️ No SPO (Spool) Process',
-      detail:'No Spool processes found. At least 1 required for print output. ['+noteLink('88416')+']'});
+      detail:'No Spool processes found. At least 1 required for print output. [tool guideline]'});
   if(!pagingOk)
     suggestions.push({type:'warn',param:'rdisp/PG_SHM',title:'⚠️ Paging Buffer Undersized',
       detail:'rdisp/PG_SHM='+pgSHM+' pages across '+totalWP+' WPs = '+(pgSHM/totalWP).toFixed(1)+
-             ' pages/WP. Recommended ≥ 10 pages/WP. ['+noteLink('88416')+']'});
+             ' pages/WP. Recommended ≥ 10 pages/WP. [tool guideline]'});
   if(worstPct<50&&addlDiaPossible>2)
     suggestions.push({type:'info',param:'rdisp/wp_no_dia / rdisp/wp_no_btc',
       title:'✅ Scope to Add More Work Processes',
@@ -505,12 +550,12 @@ function analyseWorkProcesses(counts,calc,physMB){
              'Based on 75% safe ceiling, up to '+addlDiaPossible+' additional DIA/BTC processes are possible. '+
              'Suggestion: DIA → '+(counts.dia+Math.ceil(addlDiaPossible*0.7))+
              ', BTC → '+(counts.btc+Math.floor(addlDiaPossible*0.3))+
-             '. Validate against actual concurrent user count. ['+noteLink('88416')+']'});
+             '. Validate against actual concurrent user count. [tool guideline]'});
 
   var paramImpacts=[];
   var neededEM=worstCaseEM_B/1024/1024;
-  if(neededEM>emInitMB){
-    var sugEM=Math.ceil(neededEM*1.25/1024)*1024;
+  if(neededEM>emUsableMB){
+    var sugEM=Math.ceil((neededEM*1.25+emOverheadMB)/1024)*1024;
     paramImpacts.push({param:'em/initial_size_MB',current:fmtMB(emInitMB),suggested:fmtMB(sugEM),
       reason:'WP worst-case demand ('+fmtMB(Math.round(neededEM))+') exceeds current EM. Increase PHYS_MEMSIZE or add RAM.',severity:'err'});
   }
@@ -527,7 +572,7 @@ function analyseWorkProcesses(counts,calc,physMB){
 
   return {counts,totalWP,emConsumers,
     worstCaseEM_MB:worstCaseEM_B/1024/1024,worstPct,avgPct,
-    rollExt,emInitMB,maxRecDiaBtc,addlDiaPossible,
+    rollExt,emInitMB:emUsableMB,emTotalMB:emInitMB,emOverheadMB,maxRecDiaBtc,addlDiaPossible,
     breakdown,suggestions,paramImpacts,pagingOk,pgSHM};
 }
 
@@ -542,8 +587,9 @@ function calculate(){
   var physMB =Math.round((ramGB-otherGB-osResGB)*1024);
   if(physMB<=0){ alert('⚠️ Effective PHYS_MEMSIZE is zero or negative. Adjust reserves.'); return; }
 
-  G.os=os; G.ramGB=ramGB; G.physMB=physMB; G.otherGB=otherGB; G.osResGB=osResGB;
-  G.calc=calcZAMM(physMB,os);
+  var rel=getEl('selRel').value;
+  G.os=os; G.rel=rel; G.ramGB=ramGB; G.physMB=physMB; G.otherGB=otherGB; G.osResGB=osResGB;
+  G.calc=calcZAMM(physMB,os,rel);
 
   var counts  =gatherWPCounts();
   var wpResult=analyseWorkProcesses(counts,G.calc,physMB);
@@ -553,6 +599,7 @@ function calculate(){
   renderWPSection(wpResult);
   buildReport(G.calc,os,ramGB,physMB,otherGB,osResGB,wpResult);
 
+  renderLiveCard(); show('cardLive');
   show('cardCalc'); show('cardWP'); show('cardReport');
   getEl('cardCalc').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -574,22 +621,24 @@ function renderCalcTable(c,os,ramGB,physMB,otherGB,osResGB){
     '<strong>ZAMM Configuration – OS: '+os.toUpperCase()+'</strong><br>'+
     'PHYS_MEMSIZE: <strong>'+fmtMB(physMB)+'</strong> &nbsp;·&nbsp; '+
     'em/initial_size_MB: <strong>'+fmtMB(c['em/initial_size_MB'])+'</strong><br>'+
-    '<small>Calculated per '+noteLink('88416')+' · '+noteLink('941735')+' · '+noteLink('2085980')+'</small>'+
+    '<small>Calculated per '+noteLink('88416')+' · '+noteLink('941735')+' · '+noteLink('2085980')+' · basis: '+relLabel(G.rel)+'</small>'+
     '</div></div>';
 
   var rows=[
     {p:'PHYS_MEMSIZE',         v:fmtMB(physMB),                                                                  note:'88416',  desc:'Effective physical memory for this SAP instance'},
-    {p:'em/initial_size_MB',   v:fmtMB(c['em/initial_size_MB']),                                                 note:'941735', desc:'Initial Extended Memory (70% of PHYS_MEMSIZE, max 512 GB)'},
+    {p:'em/initial_size_MB',   v:fmtMB(c['em/initial_size_MB']),                                                 note:'2085980', desc:'Initial Extended Memory (70% of PHYS_MEMSIZE, max 512 GB)'},
     {p:'em/max_size_MB',       v:fmtMB(c['em/max_size_MB']),                                                     note:'2085980',desc:'Maximum EM growth boundary'},
-    {p:'em/blocksize_KB',      v:fmtKB(c['em/blocksize_KB']),                                                    note:'941735', desc:'EM allocation block size (rounded to 4096 KB)'},
-    {p:'em/global_area_MB',    v:fmtMB(c['em/global_area_MB']),                                                  note:'88416',  desc:'Global shared area (5% of initial EM, max 32 GB)'},
-    {p:'abap/buffersize',      v:fmtKB(c['abap/buffersize']),                                                    note:'88416',  desc:'ABAP program buffer'},
+    {p:'em/blocksize_KB',      v:fmtKB(c['em/blocksize_KB']),                                                    note:'2085980', desc:'EM allocation block size (rounded to 4096 KB)'},
+    {p:'em/global_area_MB',    v:fmtMB(c['em/global_area_MB']),                                                  note:'2085980',  desc:'Global shared area (5% of initial EM, max 32 GB)'},
+    {p:'abap/shared_objects_size_MB', v:fmtMB(c['abap/shared_objects_size_MB']), note:'2085980', desc:'ABAP Shared Objects area (2% of initial EM; max 20 GB, AIX 4 GB)'},
+    {p:'rsdb/tbi_buffer_area_MB', v:fmtMB(c['rsdb/tbi_buffer_area_MB']), note:'941735', desc:'Table-buffer (tbi) area inside EM (≈ 1.21 × zcsa/table_buffer_area)'},
+    {p:'abap/buffersize',      v:fmtKB(c['abap/buffersize']),                                                    note:'2085980',  desc:'ABAP program buffer'},
     {p:'abap/heaplimit',       v:fmtNum(c['abap/heaplimit'])+' B (150 MB)',                                      note:'88416',  desc:'Per-WP heap limit before spilling to EM'},
     {p:'abap/heap_area_dia',   v:fmtNum(c['abap/heap_area_dia'])+' B',                                           note:'88416',  desc:'Max heap per DIA work process'},
     {p:'abap/heap_area_nondia',v:fmtNum(c['abap/heap_area_nondia'])+' B',                                        note:'88416',  desc:'Max heap per non-DIA WP'},
     {p:'ztta/roll_extension',  v:fmtNum(c['ztta/roll_extension'])+' B ('+(c['ztta/roll_extension']/1024/1024).toFixed(0)+' MB)', note:'88416', desc:'Max EM per work process (key tuning lever)'},
-    {p:'rdisp/PG_SHM',        v:fmtNum(c['rdisp/PG_SHM'])+' pages ('+(c['rdisp/PG_SHM']*8/1024).toFixed(0)+' MB)', note:'88416', desc:'Shared paging area (× 8 KB/page)'},
-    {p:'rdisp/PG_MAXFS',      v:fmtNum(c['rdisp/PG_MAXFS'])+' pages',                                           note:'88416',  desc:'Max paging file size'}
+    {p:'rdisp/PG_SHM',        v:fmtNum(c['rdisp/PG_SHM'])+' pages ('+(c['rdisp/PG_SHM']*8/1024).toFixed(0)+' MB)', note:'2085980', desc:'Shared paging area (× 8 KB/page)'},
+    {p:'rdisp/PG_MAXFS',      v:fmtNum(c['rdisp/PG_MAXFS'])+' pages',                                           note:'2085980',  desc:'Max paging file size'}
   ];
   var html='<thead><tr><th>Parameter</th><th>Calculated Value</th><th>Description</th><th>SAP Note</th></tr></thead><tbody>';
   rows.forEach(function(r){
@@ -748,14 +797,16 @@ function buildReport(c,os,ramGB,physMB,otherGB,osResGB,wpResult){
     '</tr></thead><tbody>';
   var paramList=[
     {p:'PHYS_MEMSIZE',        v:fmtMB(physMB),                          d:'Effective physical memory',             n:'88416'},
-    {p:'em/initial_size_MB',  v:fmtMB(c['em/initial_size_MB']),         d:'Initial Extended Memory',               n:'941735'},
+    {p:'em/initial_size_MB',  v:fmtMB(c['em/initial_size_MB']),         d:'Initial Extended Memory',               n:'2085980'},
     {p:'em/max_size_MB',      v:fmtMB(c['em/max_size_MB']),             d:'Maximum EM growth',                     n:'2085980'},
-    {p:'em/blocksize_KB',     v:fmtKB(c['em/blocksize_KB']),            d:'EM block size',                         n:'941735'},
-    {p:'em/global_area_MB',   v:fmtMB(c['em/global_area_MB']),          d:'Global shared area',                    n:'88416'},
-    {p:'abap/buffersize',     v:fmtKB(c['abap/buffersize']),            d:'ABAP program buffer',                   n:'88416'},
+    {p:'em/blocksize_KB',     v:fmtKB(c['em/blocksize_KB']),            d:'EM block size',                         n:'2085980'},
+    {p:'em/global_area_MB',   v:fmtMB(c['em/global_area_MB']),          d:'Global shared area',                    n:'2085980'},
+    {p:'abap/shared_objects_size_MB', v:fmtMB(c['abap/shared_objects_size_MB']), d:'ABAP Shared Objects area',      n:'2085980'},
+    {p:'rsdb/tbi_buffer_area_MB', v:fmtMB(c['rsdb/tbi_buffer_area_MB']), d:'Table-buffer (tbi) area in EM', n:'941735'},
+    {p:'abap/buffersize',     v:fmtKB(c['abap/buffersize']),            d:'ABAP program buffer',                   n:'2085980'},
     {p:'abap/heaplimit',      v:fmtNum(c['abap/heaplimit'])+' B',       d:'Per-WP heap limit',                     n:'88416'},
     {p:'ztta/roll_extension', v:fmtNum(c['ztta/roll_extension'])+' B',  d:'Max EM per work process',               n:'88416'},
-    {p:'rdisp/PG_SHM',       v:fmtNum(c['rdisp/PG_SHM'])+' pages',    d:'Paging buffer (× 8 KB)',                n:'88416'}
+    {p:'rdisp/PG_SHM',       v:fmtNum(c['rdisp/PG_SHM'])+' pages',    d:'Paging buffer (× 8 KB)',                n:'2085980'}
   ];
   paramList.forEach(function(r,i){
     html+='<tr style="background:'+(i%2?'#f8fafc':'#fff')+'">'+
@@ -818,6 +869,7 @@ function exportToExcel(){
     [''],
     ['SYSTEM CONFIGURATION'],
     ['OS',              G.os.toUpperCase()],
+    ['Release basis',   relLabel(G.rel)],
     ['Total RAM (GB)',  G.ramGB],
     ['Other Instance (GB)', G.otherGB],
     ['OS Reserve (GB)', G.osResGB],
@@ -852,17 +904,19 @@ function exportToExcel(){
   var s2=[
     ['Parameter','Calculated Value','Description','SAP Note'],
     ['PHYS_MEMSIZE',         fmtMB(G.physMB),                          'Effective physical memory',           '88416'],
-    ['em/initial_size_MB',   fmtMB(c['em/initial_size_MB']),           'Initial Extended Memory (70% of PHYS)','941735'],
+    ['em/initial_size_MB',   fmtMB(c['em/initial_size_MB']),           'Initial Extended Memory (70% of PHYS)','2085980'],
     ['em/max_size_MB',       fmtMB(c['em/max_size_MB']),               'Maximum EM growth boundary',          '2085980'],
-    ['em/blocksize_KB',      fmtKB(c['em/blocksize_KB']),              'EM allocation block size',            '941735'],
-    ['em/global_area_MB',    fmtMB(c['em/global_area_MB']),            'Global shared area (5% of EM)',       '88416'],
-    ['abap/buffersize',      fmtKB(c['abap/buffersize']),              'ABAP program buffer',                 '88416'],
+    ['em/blocksize_KB',      fmtKB(c['em/blocksize_KB']),              'EM allocation block size',            '2085980'],
+    ['em/global_area_MB',    fmtMB(c['em/global_area_MB']),            'Global shared area (5% of EM)',       '2085980'],
+    ['abap/shared_objects_size_MB', fmtMB(c['abap/shared_objects_size_MB']), 'ABAP Shared Objects area (2% of EM)', '2085980'],
+    ['rsdb/tbi_buffer_area_MB', fmtMB(c['rsdb/tbi_buffer_area_MB']), 'Table-buffer (tbi) area inside EM', '941735'],
+    ['abap/buffersize',      fmtKB(c['abap/buffersize']),              'ABAP program buffer',                 '2085980'],
     ['abap/heaplimit',       c['abap/heaplimit']+' B (150 MB)',        'Per-WP heap limit',                   '88416'],
     ['abap/heap_area_dia',   c['abap/heap_area_dia']+' B',            'Max heap per DIA WP',                 '88416'],
     ['abap/heap_area_nondia',c['abap/heap_area_nondia']+' B',         'Max heap per non-DIA WP',             '88416'],
     ['ztta/roll_extension',  c['ztta/roll_extension']+' B',           'Max EM per work process',             '88416'],
-    ['rdisp/PG_SHM',        c['rdisp/PG_SHM']+' pages',              'Shared paging area (×8 KB/page)',     '88416'],
-    ['rdisp/PG_MAXFS',      c['rdisp/PG_MAXFS']+' pages',            'Max paging file size',                '88416']
+    ['rdisp/PG_SHM',        c['rdisp/PG_SHM']+' pages',              'Shared paging area (×8 KB/page)',     '2085980'],
+    ['rdisp/PG_MAXFS',      c['rdisp/PG_MAXFS']+' pages',            'Max paging file size',                '2085980']
   ];
   var ws2=XLSX.utils.aoa_to_sheet(s2);
   ws2['!cols']=[{wch:28},{wch:26},{wch:44},{wch:12}];
@@ -908,6 +962,8 @@ function exportToExcel(){
   ws5['!cols']=[{wch:4},{wch:10},{wch:40},{wch:36},{wch:90}];
   XLSX.utils.book_append_sheet(wb,ws5,'Recommendations');
 
+  appendLiveSheet(wb);
+
   /* ── Download ── */
   var ts=new Date().toISOString().slice(0,19).replace(/:/g,'-');
   XLSX.writeFile(wb,'SAP_ZAMM_Report_'+ts+'.xlsx');
@@ -918,22 +974,311 @@ function exportToExcel(){
    ========================================================= */
 function clearAll(){
   ['inpRAM','inpOtherMem','inpOSReserve'].forEach(function(id){ getEl(id).value=id==='inpRAM'?'128':id==='inpOSReserve'?'2':'0'; });
-  getEl('selOS').value='linux';
+  getEl('selOS').value='linux'; getEl('selRel').value='current';
   getEl('selHasOther').value='no';
   getEl('inpFiles').value='';
   getEl('divFilePills').innerHTML='';
   getEl('wpDIA').value='10'; getEl('wpBTC').value='3';
   getEl('wpUPD').value='3';  getEl('wpUPD2').value='1'; getEl('wpSPO').value='1';
   hide('wpSourceBadge');
-  ['cardCalc','cardWP','cardReport'].forEach(function(id){ hide(id); });
-  G={profileTexts:[],calc:{},wpData:{},physMB:0,os:'linux',ramGB:0,otherGB:0,osResGB:2,wpSource:'manual',lastWpResult:null};
+  ['cardCalc','cardLive','cardWP','cardReport'].forEach(function(id){ hide(id); });
+  G={profileTexts:[],calc:{},wpData:{},physMB:0,os:'linux',rel:'current',ramGB:0,otherGB:0,osResGB:2,wpSource:'manual',lastWpResult:null};
   toggleOther();
+}
+
+/* <doc-expr> */
+/* Safe evaluator for SAP Help default-value formulas such as
+   (min(512000, $(PHYS_MEMSIZE) * 0.7))  or  [PM] * 1.5.   No eval(); grammar = numbers, + - * /, ( ), min max floor ceil sqrt,
+   $(param) references (via lookup) and [PM]. Anything else -> {ok:false}. */
+function evalDocExpr(expr,lookup){
+  var s=String(expr==null?'':expr).replace(/\u00a0/g,' ').trim(), i=0;
+  if(s.length>400) return {ok:false,reason:'too long'};
+  function fail(r){ throw new Error(r); }
+  function peek(){ while(i<s.length && s.charAt(i)===' ') i++; return s.charAt(i); }
+  function num(){ var m=/^\d+(?:\.\d+)?/.exec(s.slice(i)); if(!m) fail('number'); i+=m[0].length; return parseFloat(m[0]); }
+  function sum(){ var v=prod(); for(;;){ var c=peek(); if(c==='+'){i++; v+=prod();} else if(c==='-'){i++; v-=prod();} else return v; } }
+  function prod(){ var v=unary(); for(;;){ var c=peek(); if(c==='*'){i++; v*=unary();} else if(c==='/'){i++; var d=unary(); if(d===0) fail('div0'); v/=d;} else return v; } }
+  function unary(){ if(peek()==='-'){ i++; return -unary(); } return atom(); }
+  function args(){ var out=[]; if(peek()===')'){ i++; return out; } for(;;){ out.push(sum()); var c=peek(); if(c===','){ i++; continue; } if(c===')'){ i++; return out; } fail('args'); } }
+  function atom(){
+    var c=peek(), m;
+    if(c==='('){ i++; var v=sum(); if(peek()!==')') fail('paren'); i++; return v; }
+    if(c==='$'){ m=/^\$\(([A-Za-z0-9_\/]+)\)/.exec(s.slice(i)); if(!m) fail('ref'); i+=m[0].length; var r=lookup(m[1]); if(typeof r!=='number'||isNaN(r)) fail('unknown '+m[1]); return r; }
+    if(c==='['){ m=/^\[(PM|MM)\]/i.exec(s.slice(i)); if(!m) fail('bracket'); i+=m[0].length; var pm=lookup('PHYS_MEMSIZE'); if(typeof pm!=='number') fail('unknown PHYS_MEMSIZE'); return pm; }
+    if(/[A-Za-z]/.test(c)){ m=/^(min|max|floor|ceil|sqrt)\(/i.exec(s.slice(i)); if(!m) fail('ident'); i+=m[0].length; var a=args(), f=m[1].toLowerCase();
+      if(f==='min'||f==='max'){ if(!a.length) fail('args'); return Math[f].apply(null,a); }
+      if(a.length!==1) fail('args'); return Math[f](a[0]); }
+    return num();
+  }
+  try{ var v=sum(); peek(); if(i<s.length) fail('trailing'); if(!isFinite(v)) fail('not finite'); return {ok:true,value:v}; }
+  catch(e){ return {ok:false,reason:String(e&&e.message||e)}; }
+}
+/* </doc-expr> */
+
+/* =========================================================
+   LIVE SAP HELP CROSS-CHECK
+   Reads data/zamm-live.json, refreshed on a schedule by
+   scripts/update-knowledge.mjs (Tavily + Cohere, run from GitHub Actions).
+   The calculator itself NEVER depends on this: if the file is missing or
+   the page is opened offline, built-in formulas are used unchanged.
+   API keys are NOT in this page - they live only in GitHub Secrets.
+   ========================================================= */
+var LIVE_DATA_URL = 'data/zamm-live.json';   /* use an absolute URL here if this page is embedded/iframed on another site */
+var LIVE = { state:'loading', data:null, error:'' };
+var OBSOLETE_740 = ['ztta/roll_area','ztta/roll_first','rdisp/ROLL_MAXFS','rdisp/ROLL_SHM'];   /* Note 2085980 */
+
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+/* Data comes from the open web -> treat as untrusted: escape everything, link only to help.sap.com over https. */
+function safeSapUrl(u){
+  try{
+    var x=new URL(u);
+    return (x.protocol==='https:' && (x.hostname==='help.sap.com' || /\.help\.sap\.com$/.test(x.hostname))) ? x.href : '';
+  }catch(e){ return ''; }
+}
+function liveAgeDays(){
+  if(!LIVE.data||!LIVE.data.generatedAt) return null;
+  var t=Date.parse(LIVE.data.generatedAt);
+  return isNaN(t)?null:Math.max(0,Math.floor((Date.now()-t)/86400000));
+}
+function liveIsStale(){
+  var a=liveAgeDays(), lim=(LIVE.data&&LIVE.data.staleAfterDays)||45;
+  return a!==null && a>lim;
+}
+function validateLive(d){
+  if(!d||d.schemaVersion!==1) throw new Error('unsupported data format');
+  ['sources','documentedDefaults','advisories','changes','changeLog'].forEach(function(k){ if(!Array.isArray(d[k])) d[k]=[]; });
+  return d;
+}
+function loadLiveKnowledge(){
+  try{
+    fetch(LIVE_DATA_URL,{cache:'no-store'})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(d){
+        LIVE.data=validateLive(d);
+        LIVE.state=(LIVE.data.generatedAt && LIVE.data.status!=='never_run')?'ready':'empty';
+      })
+      .catch(function(e){ LIVE.state='offline'; LIVE.error=String((e&&e.message)||e); })
+      .then(function(){ renderLiveStatus(); if(G.lastWpResult) renderLiveCard(); });
+  }catch(e){ LIVE.state='offline'; LIVE.error=String(e); renderLiveStatus(); }
+}
+function renderLiveStatus(){
+  var el=getEl('liveStatus'); if(!el) return;
+  el.className='live-status';
+  if(LIVE.state==='offline'){
+    el.textContent='📴 Live SAP Help data unavailable (offline or not deployed) – built-in formulas in use.';
+  } else if(LIVE.state==='empty'){
+    el.textContent='⏳ Live SAP Help updates enabled – first scheduled refresh pending.';
+  } else if(LIVE.state==='ready'){
+    var a=liveAgeDays(), st=liveIsStale();
+    el.textContent='🔄 SAP Help data refreshed '+new Date(LIVE.data.generatedAt).toISOString().slice(0,10)+
+      (a!==null?' ('+a+' day'+(a===1?'':'s')+' ago)':'')+' · '+LIVE.data.sources.length+' sources'+
+      (LIVE.data.status==='partial'?' · partial run':'')+
+      (st?' · ⚠️ older than '+((LIVE.data.staleAfterDays)||45)+' days – check the update workflow':'');
+    if(st) el.className='live-status stale';
+  } else { el.textContent=''; }
+}
+
+/* Documented defaults from SAP Help are text ("[PM]", "(min(512000, $(PHYS_MEMSIZE) * 0.7))", "20000 (100000 on 64 bit)").
+   Resolve what can be resolved safely; leave the rest as text. */
+function lookupParam(name,physMB){
+  var ln=String(name).toLowerCase();
+  if(ln==='phys_memsize') return physMB;
+  for(var k in G.calc){ if(Object.prototype.hasOwnProperty.call(G.calc,k) && k.toLowerCase()===ln) return G.calc[k]; }
+  return undefined;
+}
+function resolveDefault(txt,physMB){
+  var t=String(txt||'').trim(), m;
+  m=t.match(/(\d[\d,]*)\s*[\[(]\s*(\d[\d,]*)\s+on\s+64\s*bit\s*[\])]/i);
+  if(m) return {num:Number(m[2].replace(/,/g,'')), text:m[2]+' (64-bit)', note:'64-bit value'};
+  m=t.match(/[\[(]\s*(\[PM\](?:\s*\*\s*[\d.]+)?)\s+on\s+64\s*bit\s*[\])]/i);
+  if(m){ var r=resolveDefault(m[1],physMB); r.note='64-bit value'; return r; }
+  if(/^\d[\d,]*$/.test(t)) return {num:Number(t.replace(/,/g,'')), text:t};
+  var ev=evalDocExpr(t,function(n){ return lookupParam(n,physMB); });
+  if(ev.ok) return {num:ev.value, text:t+' = '+fmtNum(Math.round(ev.value)), note:/\[PM\]|PHYS_MEMSIZE/i.test(t)?'PHYS_MEMSIZE = '+fmtNum(physMB):''};
+  if(/\[BE\]/i.test(t)) return {num:null, text:t, note:'depends on max. users [BE]'};
+  return {num:null, text:t, note:(ev.reason&&/^unknown /.test(ev.reason))?'needs '+ev.reason.slice(8)+' (not calculated here)':''};
+}
+function osGroup(os){ return os==='windows' ? 'windows' : 'unix'; }
+function platformOk(p,group){ return p==='unknown' || p===group || (group==='unix' && p==='linux'); }
+function calcValueFor(param){
+  var lp=param.toLowerCase();
+  if(lp==='phys_memsize') return G.physMB;
+  for(var k in G.calc){ if(Object.prototype.hasOwnProperty.call(G.calc,k) && k.toLowerCase()===lp) return G.calc[k]; }
+  return undefined;
+}
+function entryPlatforms(x){ return Array.isArray(x.platforms)?x.platforms:((x.platform&&x.platform!=='unknown')?[x.platform]:[]); }
+function entryAppliesToOS(x,os){
+  if(Array.isArray(x.platforms)) return !x.platforms.length || x.platforms.indexOf(os)>=0;   /* exact OS labels from the table */
+  return platformOk(x.platform||'unknown',osGroup(os));                                        /* older file format: page-level platform */
+}
+function liveCrossCheckRows(){
+  var d=LIVE.data, os=G.os, srcById={}, byParam={}, rank={current:0,other:1,legacy:2}, rows=[];
+  d.sources.forEach(function(s){ srcById[s.id]=s; });
+  d.documentedDefaults.forEach(function(x){
+    var s=srcById[x.sourceId];
+    if(!s||!entryAppliesToOS(x,os)) return;
+    if((s.basis==='current'||s.basis==='nw740') && s.basis!==G.rel && !(s.basis==='current'&&G.rel==='s4')) return;   /* seed document of another release basis (the ECC-era doc is still shown for S/4 to expose where it lags) */
+    (byParam[x.param]=byParam[x.param]||[]).push({x:x,s:s});
+  });
+  Object.keys(byParam).forEach(function(p){
+    var arr=byParam[p].sort(function(a,b){
+      return ((rank[a.s.kind]||1)-(rank[b.s.kind]||1)) || ((b.s.score||0)-(a.s.score||0));
+    });
+    var best=arr[0].s, mine=arr.filter(function(e){ return e.s.id===best.id; });
+    var variants=mine.map(function(e){ var r=resolveDefault(e.x.default,G.physMB); r.platforms=entryPlatforms(e.x); r.unit=e.x.unit||''; return r; });
+    var numsOf=function(list){ return list.filter(function(r){ return r.num!==null; }).map(function(r){ return r.num; }); };
+    var nums=numsOf(variants), calc=calcValueFor(p), status;
+    var otherSrc={}; arr.forEach(function(e){ if(e.s.id!==best.id) otherSrc[e.s.id]=e; });
+    var conflict=Object.keys(otherSrc).some(function(id){
+      var o=otherSrc[id]; if(o.s.kind!==best.kind) return false;
+      var on=numsOf(arr.filter(function(e){ return e.s.id===id; }).map(function(e){ return resolveDefault(e.x.default,G.physMB); }));
+      return on.length&&nums.length&&on.every(function(v){ return nums.every(function(w){ return Math.abs(v-w)>=1; }); });
+    });
+    if(calc===undefined) status=(OBSOLETE_740.indexOf(p)>=0)?'obsolete':'reference';
+    else if(!nums.length) status='formula';
+    else status=nums.some(function(v){ return Math.abs(Number(calc)-v)<=0.5; })?'match':'differs';
+    rows.push({param:p,calc:calc,variants:variants,res:variants[0],unit:variants[0].unit,src:best,conflict:conflict,status:status,
+               others:Object.keys(otherSrc).length,platform:variants[0].platforms.length?variants[0].platforms.join('/'):'unknown'});
+  });
+  var order={differs:0,match:1,formula:2,reference:3,obsolete:4};
+  return rows.sort(function(a,b){ return (order[a.status]-order[b.status]) || a.param.localeCompare(b.param); });
+}
+function liveDriftHtml(d){
+  var tc=d.toolCheck; if(!tc||!Array.isArray(tc.drift)) return '';
+  var tkey=(G.rel==='s4')?'current':G.rel;
+  var ack=Array.isArray(tc.acknowledged)?tc.acknowledged:[], unc=(tc.uncovered&&tc.uncovered[tkey])||[];
+  var nCov=(tc.covered&&tc.covered[tkey]||[]).length, h='';
+  if(G.rel==='s4') h+='<div class="banner banner-info"><span class="banner-icon">ℹ️</span><div><strong>S/4HANA basis (kernel 7.93):</strong> the SAP Help documents describe the ECC-era kernel (0.7 × PM, no <code>VIRT_MEMSIZE</code>). This basis is verified against the RSPARAM output of live S/4HANA systems, so “Differs” rows for <code>em/initial_size_MB</code>, <code>em/max_size_MB</code> and related values show where the documentation lags the kernel.</div></div>';
+  function ex(e){ return esc(e.os)+' / '+esc(e.ramGB)+' GB: calculator '+esc(fmtNum(e.tool))+' vs documented '+esc((e.documented||[]).map(fmtNum).join(' or ')); }
+  if(tc.drift.length){
+    h+='<div class="banner banner-warn"><span class="banner-icon">⚠️</span><div><strong>The SAP documentation and this calculator disagree for '+tc.drift.length+' parameter'+(tc.drift.length>1?'s':'')+
+       '</strong> (checked at the last refresh, '+esc(String(tc.ranAt||'').slice(0,10))+'). Either SAP changed a default or the calculator needs updating:<ul style="margin:6px 0 0 18px;">';
+    tc.drift.forEach(function(x){ h+='<li><code>'+esc(x.param)+'</code> ['+esc(x.basis==='nw740'?'NW 7.4':'ABAP Platform')+'] – '+esc(x.failing)+' of '+esc(x.total)+' checks, e.g. '+(x.examples&&x.examples[0]?ex(x.examples[0]):'')+'</li>'; });
+    h+='</ul></div></div>';
+  } else {
+    h+='<div class="banner banner-ok"><span class="banner-icon">✅</span><div><strong>Calculator and SAP Help agree</strong> on all '+nCov+' documented formulas for the selected release basis (verified across OS types and RAM sizes at the last refresh).</div></div>';
+  }
+  var rel=ack.filter(function(x){ return x.basis===tkey; });
+  if(rel.length||unc.length){
+    h+='<details class="live-details"><summary>Verification details</summary>';
+    if(rel.length){ h+='<div class="live-note"><strong>Known differences between SAP sources</strong> (calculator follows the Note named in the reason):</div>';
+      rel.forEach(function(x){ h+='<div class="live-src"><code>'+esc(x.param)+'</code> – '+esc(x.reason||'')+'</div>'; }); }
+    if(unc.length){ h+='<div class="live-note"><strong>Calculated here, but not documented by the seed documents</strong> (backed by SAP Notes only): '+unc.map(function(u){ return '<code>'+esc(u)+'</code>'; }).join(', ')+'</div>'; }
+    h+='</details>';
+  }
+  return h;
+}
+function liveSrcLink(s){
+  var u=safeSapUrl(s.url), t=esc(s.title||'SAP Help page');
+  return u ? '<a href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+t+'</a>' : t;
+}
+function liveKindBadge(s){
+  return s.kind==='legacy' ? '<span class="badge badge-warn">legacy release</span>'
+       : s.kind==='current'? '<span class="badge badge-ok">current docs</span>'
+       :                     '<span class="badge badge-info">other</span>';
+}
+function renderLiveCard(){
+  var el=getEl('divLive'); if(!el) return;
+  if(LIVE.state==='loading'){ el.innerHTML='<div class="banner banner-info"><span class="banner-icon">⏳</span><div>Loading live SAP Help data…</div></div>'; return; }
+  if(LIVE.state==='offline'){
+    el.innerHTML='<div class="banner banner-info"><span class="banner-icon">📴</span><div><strong>Live cross-check unavailable.</strong> '+
+      'The page could not load <code>'+esc(LIVE_DATA_URL)+'</code> (opened from disk, or not deployed yet). '+
+      'The calculator above is unaffected and uses its built-in formulas.</div></div>'; return;
+  }
+  if(LIVE.state==='empty'){
+    el.innerHTML='<div class="banner banner-info"><span class="banner-icon">⏳</span><div><strong>No live data yet.</strong> '+
+      'Run the “Update ZAMM live knowledge” GitHub Action once (or wait for the weekly schedule).</div></div>'; return;
+  }
+  var d=LIVE.data, group=osGroup(G.os), stale=liveIsStale(), a=liveAgeDays(), html='';
+  html+='<div class="banner '+(stale?'banner-warn':'banner-ok')+'"><span class="banner-icon">'+(stale?'⚠️':'✅')+'</span><div>'+
+    '<strong>SAP Help data refreshed '+esc(new Date(d.generatedAt).toISOString().slice(0,10))+'</strong>'+(a!==null?' ('+a+' day'+(a===1?'':'s')+' ago)':'')+
+    ' · '+d.sources.length+' sources from help.sap.com · comparing against <strong>'+(group==='windows'?'Windows':'UNIX / Linux')+'</strong> pages'+
+    (stale?'<br><strong>Data is older than '+esc(d.staleAfterDays||45)+' days</strong> – the scheduled refresh may have stopped.':'')+
+    (d.status==='partial'?'<br>Last run was partial (some API calls failed); older entries may be retained.':'')+
+    '</div></div>';
+  html+=liveDriftHtml(d);
+  html+='<p class="live-note"><strong>How to read this:</strong> SAP Help documents <em>defaults</em>; this calculator produces <em>sizing recommendations</em>. '+
+    '“Differs” means <em>review</em>, not <em>error</em> – confirm against the linked page and the SAP Notes (Notes need an S-user and are not fetched automatically).</p>';
+
+  var rows=liveCrossCheckRows();
+  if(!rows.length){
+    html+='<div class="suggestion-card info"><h5>No documented defaults found for this platform</h5><p>The last refresh did not extract any tracked parameters for '+(group==='windows'?'Windows':'UNIX / Linux')+'.</p></div>';
+  } else {
+    html+='<div class="section-title">📚 Calculator value vs. documented SAP Help default</div><div class="tbl-wrap"><table><thead><tr>'+
+      '<th>Parameter</th><th>Calculator</th><th>SAP Help default</th><th>Result</th><th>Source</th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      var badge=r.status==='match'?'<span class="badge badge-ok">Matches</span>':
+                r.status==='differs'?'<span class="badge badge-warn">Differs – review</span>':
+                r.status==='formula'?'<span class="badge badge-info">Depends on workload</span>':
+                r.status==='obsolete'?'<span class="badge badge-info">Obsolete ≥ 7.40</span>':
+                '<span class="badge badge-info">Reference only</span>';
+      html+='<tr><td><code>'+esc(r.param)+'</code></td>'+
+        '<td>'+(r.calc===undefined?'<span style="color:var(--muted)">not calculated</span>':'<strong>'+esc(fmtNum(r.calc))+'</strong>')+'</td>'+
+        '<td>'+r.variants.map(function(v){
+            return '<div><strong>'+esc(v.text)+'</strong>'+(v.unit?' <span style="color:var(--muted)">'+esc(v.unit)+'</span>':'')+
+              (v.platforms.length&&r.variants.length>1?' <span class="badge badge-info">'+esc(v.platforms.join('/'))+'</span>':'')+
+              (v.note?'<div class="hint">'+esc(v.note)+'</div>':'')+'</div>'; }).join('')+
+          (r.variants.length>1&&!r.variants.some(function(v){ return v.platforms.length; })?'<div class="hint">several documented variants; platform not stated – matches if any variant equals</div>':'')+
+          (r.conflict?'<div class="hint" style="color:#e9730c">sources of the same type disagree – see Sources</div>':'')+'</td>'+
+        '<td>'+badge+'</td>'+
+        '<td style="font-size:12px">'+liveSrcLink(r.src)+'<br>'+liveKindBadge(r.src)+((r.src.docRelease||r.src.release)?' <span class="hint">'+esc(r.src.docRelease||r.src.release)+'</span>':'')+
+          (r.platform==='unknown'?' <span class="hint">platform not stated</span>':'')+
+          (r.others>0?'<div class="hint">+'+r.others+' other source'+(r.others>1?'s':'')+'</div>':'')+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+  }
+
+  var srcById={}; d.sources.forEach(function(s){ srcById[s.id]=s; });
+  var log=(d.changeLog||[]).slice(0,10);
+  if(log.length){
+    html+='<div class="section-title">🆕 Documented defaults that changed between refreshes</div>';
+    log.forEach(function(c){
+      var s=srcById[c.sourceId];
+      html+='<div class="suggestion-card"><h5><code>'+esc(c.param)+'</code> ('+esc(c.platform)+')</h5><p>'+esc(c.was)+' → <strong>'+esc(c.now)+'</strong> · detected '+
+        esc(String(c.detectedAt||'').slice(0,10))+(s?' · '+liveSrcLink(s):'')+'</p></div>';
+    });
+  }
+  var adv=(d.advisories||[]).filter(function(x){ return srcById[x.sourceId]; });
+  if(adv.length){
+    html+='<div class="section-title">💡 Recent guidance from SAP Help <span class="badge badge-info">AI summary – verify at source</span></div>';
+    adv.forEach(function(x){
+      var s=srcById[x.sourceId];
+      html+='<div class="suggestion-card info"><h5>'+liveSrcLink(s)+' '+liveKindBadge(s)+'</h5><p>'+esc(x.summary)+'</p></div>';
+    });
+  }
+  html+='<details class="live-details"><summary>Sources ('+d.sources.length+')</summary>';
+  d.sources.forEach(function(s){
+    html+='<div class="live-src">'+liveKindBadge(s)+(s.seed?' <span class="badge badge-info">seed document'+(s.stale?' · STALE':'')+'</span>':'')+' '+liveSrcLink(s)+
+      ' <span class="hint">· '+esc(s.platform||'unknown')+(s.release?' · '+esc(s.release):'')+' · relevance '+esc(s.score)+' ('+esc(s.scoreBy||'')+') · retrieved '+esc(String(s.retrievedAt||'').slice(0,10))+'</span></div>';
+  });
+  html+='</details>';
+  el.innerHTML=html;
+}
+function appendLiveSheet(wb){
+  if(LIVE.state!=='ready'||typeof XLSX==='undefined') return;
+  try{
+    var rows=liveCrossCheckRows();
+    var s=[['SAP Help cross-check – data refreshed',LIVE.data.generatedAt],[''],
+           ['Parameter','Calculator value','SAP Help default','Resolved','Unit','Result','Source release','Source type','Source URL']];
+    rows.forEach(function(r){
+      s.push([r.param, r.calc===undefined?'':r.calc, r.variants.map(function(v){ return v.text; }).join(' | '), (r.variants.length===1 ? (r.variants[0].num===null?'':Math.round(r.variants[0].num)) : r.variants.map(function(v){ return v.num===null?'':Math.round(v.num); }).join(' | ')), r.unit,
+              r.status, r.src.release||'', r.src.kind, safeSapUrl(r.src.url)]);
+    });
+    var ws=XLSX.utils.aoa_to_sheet(s);
+    ws['!cols']=[{wch:24},{wch:18},{wch:26},{wch:16},{wch:12},{wch:12},{wch:18},{wch:10},{wch:70}];
+    XLSX.utils.book_append_sheet(wb,ws,'SAP Help Cross-check');
+  }catch(e){ /* never let the optional sheet break the main export */ }
 }
 
 /* =========================================================
    INIT
    ========================================================= */
 toggleOther();
+loadLiveKnowledge();
 </script>
 </body>
 </html>

@@ -1,0 +1,13 @@
+{
+  "name": "sap-zamm-calculator-live",
+  "version": "4.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SAP ZAMM Calculator with a self-updating SAP Help cross-check (Tavily + Cohere free tiers)",
+  "scripts": {
+    "update": "node scripts/update-knowledge.mjs",
+    "update:dry": "node scripts/update-knowledge.mjs --dry-run",
+    "test": "node --test scripts/test/updater.test.mjs scripts/test/doc-parse.test.mjs scripts/test/evaluator.test.mjs scripts/test/rsparam-evidence.test.mjs"
+  },
+  "engines": { "node": ">=18" }
+}

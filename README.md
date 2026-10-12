@@ -1,3 +1,7 @@
+> **New:** `index.html` (v4) now has a self-updating *Live SAP Help Cross-check* (Tavily + Cohere free tiers). See [LIVE-UPDATES.md](LIVE-UPDATES.md).
+
+> **Verified against SAP Notes 88416 / 941735 / 2085980 / 1518419 / 3681846:** see [NOTE-VERIFICATION.md](NOTE-VERIFICATION.md) (formula corrections, three release bases, evidence from four live systems).
+
 # SAP ZAMM Calculator - Complete Tool Suite
 
 ## 📋 Overview

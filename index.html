@@ -1,3 +1,4 @@
+
                         <!DOCTYPE html>
                         <html lang="en">
                         <head>
@@ -151,12 +152,13 @@ details.live-details summary{cursor:pointer;font-weight:700;color:#003d7a;font-s
       </select>
     </div>
     <div>
-      <label>SAP Release Basis <span class="hint">(defaults differ by release)</span></label>
-      <select id="selRel">
-        <option value="current" selected>ECC – SAP kernel 7.54 (verified on live ECC systems)</option>
-        <option value="s4">S/4HANA – SAP kernel 7.93 (verified on a live system: 0.8 × PM, VIRT_MEMSIZE)</option>
-        <option value="nw740">NW 7.4 / kernel 7.40–7.4x – Notes + Help only (no live system)</option>
+      <label>SAP Kernel Release</label>
+      <select id="selRel" onchange="updateRelHint()">
+        <option value="s4">SAP Kernel &gt;= 7.9x</option>
+        <option value="current" selected>SAP Kernel 7.50 - 7.5X</option>
+        <option value="nw740">SAP Kernel 7.40-7.4X</option>
       </select>
+      <div class="hint" id="relHint"></div>
     </div>
     <div>
       <label>Total Physical RAM (GB)</label>
@@ -328,7 +330,14 @@ function hide(id)   { getEl(id).classList.add('hidden'); }
 function fmtMB(v)   { return v==null?'n/a':Number(v||0).toLocaleString()+' MB'; }
 function fmtNum(v)  { return v==null?'n/a':Number(v||0).toLocaleString(); }
 function fmtKB(v)   { return v==null?'n/a':Number(v||0).toLocaleString()+' KB'; }
-function relLabel(r){ return r==='nw740'?'NW 7.4 / kernel 7.40–7.4x (docs only)':(r==='s4'?'S/4HANA / kernel 7.93':'ECC / kernel 7.54'); }
+function relLabel(r){ return r==='nw740'?'SAP Kernel 7.40-7.4X (Notes + Help only)':(r==='s4'?'SAP Kernel >= 7.9x (verified on 7.93)':'SAP Kernel 7.50 - 7.5X (verified on 7.54)'); }
+/* What each kernel range rests on - shown under the drop-down so a range never claims more than was verified. */
+function relHint(r){
+  return r==='s4' ? 'Evidence: live S/4HANA system on kernel 7.93 (Windows; Linux values not verified). Other 7.9x kernels are assumed to behave the same.'
+       : r==='nw740' ? 'SAP Notes and SAP Help only – no live system was available to verify this range.'
+       : 'Evidence: live ECC systems on kernel 7.54 (Linux and Windows). Other 7.5x kernels are assumed to behave the same.';
+}
+function updateRelHint(){ var el=getEl('relHint'), sel=getEl('selRel'); if(el&&sel) el.textContent=relHint(sel.value); }
 function stripTags(s){ return (s||'').replace(/<[^>]+>/g,''); }
 
 function noteLink(id){
@@ -973,7 +982,7 @@ function exportToExcel(){
    ========================================================= */
 function clearAll(){
   ['inpRAM','inpOtherMem','inpOSReserve'].forEach(function(id){ getEl(id).value=id==='inpRAM'?'128':id==='inpOSReserve'?'2':'0'; });
-  getEl('selOS').value='linux'; getEl('selRel').value='current';
+  getEl('selOS').value='linux'; getEl('selRel').value='current'; updateRelHint();
   getEl('selHasOther').value='no';
   getEl('inpFiles').value='';
   getEl('divFilePills').innerHTML='';
@@ -1151,12 +1160,12 @@ function liveDriftHtml(d){
   var tkey=(G.rel==='s4')?'current':G.rel;
   var ack=Array.isArray(tc.acknowledged)?tc.acknowledged:[], unc=(tc.uncovered&&tc.uncovered[tkey])||[];
   var nCov=(tc.covered&&tc.covered[tkey]||[]).length, h='';
-  if(G.rel==='s4') h+='<div class="banner banner-info"><span class="banner-icon">ℹ️</span><div><strong>S/4HANA basis (kernel 7.93):</strong> the SAP Help documents describe the ECC-era kernel (0.7 × PM, no <code>VIRT_MEMSIZE</code>). This basis is verified against the RSPARAM output of live S/4HANA systems, so “Differs” rows for <code>em/initial_size_MB</code>, <code>em/max_size_MB</code> and related values show where the documentation lags the kernel.</div></div>';
+  if(G.rel==='s4') h+='<div class="banner banner-info"><span class="banner-icon">ℹ️</span><div><strong>Kernel >= 7.9x basis (verified on 7.93):</strong> the SAP Help documents describe older kernel behaviour (0.7 × PM, no <code>VIRT_MEMSIZE</code>). This basis is verified against the RSPARAM output of live S/4HANA systems, so “Differs” rows for <code>em/initial_size_MB</code>, <code>em/max_size_MB</code> and related values show where the documentation lags the kernel.</div></div>';
   function ex(e){ return esc(e.os)+' / '+esc(e.ramGB)+' GB: calculator '+esc(fmtNum(e.tool))+' vs documented '+esc((e.documented||[]).map(fmtNum).join(' or ')); }
   if(tc.drift.length){
     h+='<div class="banner banner-warn"><span class="banner-icon">⚠️</span><div><strong>The SAP documentation and this calculator disagree for '+tc.drift.length+' parameter'+(tc.drift.length>1?'s':'')+
        '</strong> (checked at the last refresh, '+esc(String(tc.ranAt||'').slice(0,10))+'). Either SAP changed a default or the calculator needs updating:<ul style="margin:6px 0 0 18px;">';
-    tc.drift.forEach(function(x){ h+='<li><code>'+esc(x.param)+'</code> ['+esc(x.basis==='nw740'?'NW 7.4':'ABAP Platform')+'] – '+esc(x.failing)+' of '+esc(x.total)+' checks, e.g. '+(x.examples&&x.examples[0]?ex(x.examples[0]):'')+'</li>'; });
+    tc.drift.forEach(function(x){ h+='<li><code>'+esc(x.param)+'</code> ['+esc(relLabel(x.basis))+'] – '+esc(x.failing)+' of '+esc(x.total)+' checks, e.g. '+(x.examples&&x.examples[0]?ex(x.examples[0]):'')+'</li>'; });
     h+='</ul></div></div>';
   } else {
     h+='<div class="banner banner-ok"><span class="banner-icon">✅</span><div><strong>Calculator and SAP Help agree</strong> on all '+nCov+' documented formulas for the selected release basis (verified across OS types and RAM sizes at the last refresh).</div></div>';
@@ -1277,6 +1286,7 @@ function appendLiveSheet(wb){
    INIT
    ========================================================= */
 toggleOther();
+updateRelHint();
 loadLiveKnowledge();
 </script>
 </body>
